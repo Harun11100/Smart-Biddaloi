@@ -1,0 +1,189 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import { Formik } from "formik";
+import * as Yup from "yup";
+
+const validationSchema = Yup.object().shape({
+  email: Yup.string().email("সঠিক ইমেইল দিন").required("ইমেইল আবশ্যক"),
+  password: Yup.string()
+    .min(6, "পাসওয়ার্ড অন্তত ৬ অক্ষরের হতে হবে")
+    .required("পাসওয়ার্ড আবশ্যক"),
+});
+
+export default function AdminLoginPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  // 🌟 OTP Modal State
+  const [showOTP, setShowOTP] = useState(false);
+  const [adminId, setAdminId] = useState(null);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otp, setOtp] = useState("");
+
+  const handleLogin = async (values) => {
+    setLoading(true);
+    try {
+      const res = await axios.post("/api/admin/login", values);
+
+      if (res.data.success) {
+        setAdminId(res.data.admin.adminId);
+        setShowOTP(true); // 🌟 Show OTP modal
+      } else {
+        window.alert(res.data.message || "লগইন ব্যর্থ হয়েছে");
+      }
+    } catch (err) {
+      window.alert(err?.response?.data?.message || "সার্ভার ত্রুটি!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🌟 OTP Submit Handler
+  const verifyOTP = async () => {
+    if (!otp) return alert("OTP দিন");
+
+    setOtpLoading(true);
+    try {
+      const res = await axios.post("/api/admin/verifyLoginOTP", {
+        adminId,
+        loginOTP: otp,
+      });
+
+      if (res.data.success) {
+        localStorage.setItem("adminToken", res.data.token);
+        router.push(`/admin/${adminId}/dashboard`);
+      } else {
+        alert(res.data.message || "OTP ভুল হয়েছে");
+      }
+    } catch (error) {
+      alert(error?.response?.data?.message || "OTP যাচাই ব্যর্থ!");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  return (
+    <>
+      {/* ---------------- LOGIN UI ---------------- */}
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-md border border-gray-100">
+          <h1 className="text-3xl font-bold text-center text-indigo-700 mb-6">
+            এডমিন লগইন
+          </h1>
+
+          <Formik
+            initialValues={{ email: "", password: "" }}
+            validationSchema={validationSchema}
+            onSubmit={handleLogin}
+          >
+            {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+              <form onSubmit={handleSubmit}>
+                {/* Email */}
+                <div className="mb-5">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    ইমেইল
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={values.email}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="আপনার ইমেইল দিন"
+                    className="w-full px-3 py-3 border rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 focus:border-indigo-500 outline-none"
+                  />
+                  {errors.email && touched.email && (
+                    <p className="text-red-600 text-sm mt-1">{errors.email}</p>
+                  )}
+                </div>
+
+                {/* Password */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    পাসওয়ার্ড
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={values.password}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="আপনার পাসওয়ার্ড দিন"
+                    className="w-full px-3 py-3 border rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 focus:border-indigo-500 outline-none"
+                  />
+                  {errors.password && touched.password && (
+                    <p className="text-red-600 text-sm mt-1">{errors.password}</p>
+                  )}
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`w-full py-3 rounded-lg text-white text-lg font-semibold transition-all ${
+                    loading
+                      ? "bg-gray-400"
+                      : "bg-indigo-600 hover:bg-indigo-700 shadow-md"
+                  }`}
+                >
+                  {loading ? "প্রসেসিং..." : "লগইন করুন"}
+                </button>
+              </form>
+            )}
+          </Formik>
+
+          <p className="text-center text-sm text-gray-600 mt-5">
+            নতুন এডমিন তৈরি করতে চান?{" "}
+            
+          </p>
+        </div>
+      </div>
+
+      {/* ---------------- OTP MODAL ---------------- */}
+      {showOTP && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
+          <div className="bg-white w-full max-w-sm shadow-xl p-6 rounded-xl animate-fadeIn">
+            <h2 className="text-xl font-bold text-center text-indigo-700 mb-3">
+              OTP যাচাই করুন
+            </h2>
+
+            <p className="text-center text-gray-600 mb-4">
+              আপনার ইমেইলে পাঠানো ৬-সংখ্যার OTP লিখুন
+            </p>
+
+            <input
+              type="text"
+              value={otp}
+              maxLength={6}
+              onChange={(e) => setOtp(e.target.value)}
+              className="w-full text-center text-xl tracking-widest px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-400 mb-4"
+              placeholder="______"
+            />
+
+            <button
+              onClick={verifyOTP}
+              disabled={otpLoading}
+              className={`w-full py-3 rounded-lg text-white font-semibold ${
+                otpLoading
+                  ? "bg-gray-400"
+                  : "bg-indigo-600 hover:bg-indigo-700"
+              }`}
+            >
+              {otpLoading ? "ভেরিফাই হচ্ছে..." : "ভেরিফাই করুন"}
+            </button>
+
+            <button
+              onClick={() => setShowOTP(false)}
+              className="w-full mt-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700"
+            >
+              বাতিল করুন
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

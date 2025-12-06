@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -11,7 +15,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "incremental": true,
     "plugins": [
       {
@@ -19,7 +23,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     }
   },
   "include": [
@@ -29,6 +35,8 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
-  "exclude": ["node_modules"]
+, "app/components/Announcements.js", "app/components/AttendanceChart.js", "app/components/AttendanceChartContainer.js", "app/components/BigCalendarContainer.js", "app/components/BigCalender.js", "app/components/CountChart.js", "app/components/CountChartContainer.js", "app/components/EventCalendar.js", "app/components/EventCalendarContainer.js", "app/components/EventList.js", "app/components/FinanceChart.js", "app/components/FormContainer.js", "app/components/FormModal.js", "app/components/forms/ClassForm.js", "app/components/forms/StudentForm.js", "app/components/forms/SubjectForm.js", "app/lib/formValidationSchemas.js", "app/components/forms/TeacherForm.js", "app/(dashboard)/admin/page.js", "app/components/InputField.js", "app/components/Menu.js", "app/components/Navbar.js", "app/components/Pagination.js", "app/components/Performance.js", "app/components/StudentAttendanceCard.js", "app/components/Table.js", "app/components/TableSearch.js", "app/components/UserCard.js"  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
