@@ -13,30 +13,36 @@ import {
 } from "recharts";
 
 const data = [
-  { name: "Jan", income: 4000, expense: 2400 },
-  { name: "Feb", income: 3000, expense: 1398 },
-  { name: "Mar", income: 2000, expense: 9800 },
-  { name: "Apr", income: 2780, expense: 3908 },
-  { name: "May", income: 1890, expense: 4800 },
-  { name: "Jun", income: 2390, expense: 3800 },
-  { name: "Jul", income: 3490, expense: 4300 },
-  { name: "Aug", income: 3490, expense: 4300 },
-  { name: "Sep", income: 3490, expense: 4300 },
-  { name: "Oct", income: 3490, expense: 4300 },
-  { name: "Nov", income: 3490, expense: 4300 },
-  { name: "Dec", income: 3490, expense: 4300 },
+  { name: "Jan", received: 12000, due: 3000 },
+  { name: "Feb", received: 15000, due: 2000 },
+  { name: "Mar", received: 17000, due: 2500 },
+  { name: "Apr", received: 16000, due: 4000 },
+  { name: "May", received: 18000, due: 3500 },
+  { name: "Jun", received: 19000, due: 3000 },
+  { name: "Jul", received: 20000, due: 3200 },
+  { name: "Aug", received: 21000, due: 2900 },
+  { name: "Sep", received: 19500, due: 3100 },
+  { name: "Oct", received: 22000, due: 2800 },
+  { name: "Nov", received: 21000, due: 3300 },
+  { name: "Dec", received: 23000, due: 2500 },
 ];
 
 const FinanceChart = () => {
   return (
     <div className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-2xl w-full h-full p-6 shadow-sm">
-      
+
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-semibold text-gray-800 tracking-tight">
-          Finance Overview
+          Monthly Payment Summary
         </h1>
-        <Image src="/moreDark.png" alt="menu" width={20} height={20} className="opacity-70 hover:opacity-100 transition" />
+        <Image 
+          src="/moreDark.png" 
+          alt="menu" 
+          width={20} 
+          height={20}
+          className="opacity-70 hover:opacity-100 transition" 
+        />
       </div>
 
       {/* Chart */}
@@ -77,22 +83,25 @@ const FinanceChart = () => {
             wrapperStyle={{ paddingBottom: 20, marginTop: 10 }}
           />
 
-          {/* Smooth, rounded lines */}
+          {/* Received Line */}
           <Line
             type="monotone"
-            dataKey="income"
-            stroke="#4F9CF9"
+            dataKey="received"
+            name="Received Payment"
+            stroke="#10B981"
             strokeWidth={4}
-            dot={{ r: 4, strokeWidth: 2, fill: "white", stroke: "#4F9CF9" }}
+            dot={{ r: 4, strokeWidth: 2, fill: "white", stroke: "#10B981" }}
             activeDot={{ r: 6 }}
           />
 
+          {/* Due Line */}
           <Line
             type="monotone"
-            dataKey="expense"
-            stroke="#F973A5"
+            dataKey="due"
+            name="Due Payment"
+            stroke="#EF4444"
             strokeWidth={4}
-            dot={{ r: 4, strokeWidth: 2, fill: "white", stroke: "#F973A5" }}
+            dot={{ r: 4, strokeWidth: 2, fill: "white", stroke: "#EF4444" }}
             activeDot={{ r: 6 }}
           />
         </LineChart>

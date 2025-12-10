@@ -19,6 +19,7 @@ const StudentSchema = new mongoose.Schema(
       enum: ["paid", "unpaid", "partial"],
       default: "unpaid",
     },
+    totalMonthlyFees: { type: Number, required: true, default: 0 },
     address: { type: String, required: true },
     schoolId: { type: String, required: true },
     expoToken: { type: String, default: null },

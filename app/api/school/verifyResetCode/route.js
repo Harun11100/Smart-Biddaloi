@@ -42,6 +42,7 @@ export async function POST(req) {
     );
 
     // Reset school payment count and clear code
+    school.totalStudentFees = 0;
     school.totalPaymentCount = 0;
     school.resetCode = null;
     school.resetCodeExpiry = null;

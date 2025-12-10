@@ -14,7 +14,7 @@ import UserCard from "@/app/components/UserCard";
 export default function AdminPage() {
   const params = useParams();
   const slug = params.slug;
-  console.log("Slug:", slug)
+
   const [schoolData, setSchoolData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -22,6 +22,7 @@ export default function AdminPage() {
   const [otpModal, setOtpModal] = useState(false);
   const [otp, setOtp] = useState("");
   const [verifying, setVerifying] = useState(false);
+  const schoolId = schoolData?._id;
 
   const fetchSchoolData = async () => {
     try {
@@ -29,9 +30,9 @@ export default function AdminPage() {
       if (!token) return;
 
       const res = await axios.get(
-        `/api/school/getSchoolData?slug=${slug}`,
+        `/api/school/getSchoolDetails?slug=${slug}`,
         { headers: { Authorization: `Bearer ${token}` } }
-      );
+       );
 
       if (res.data.success) {
         setSchoolData(res.data.school);

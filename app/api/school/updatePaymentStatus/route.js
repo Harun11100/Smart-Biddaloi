@@ -10,7 +10,6 @@ export async function PUT(req) {
 
     const { studentId, classId, status } = await req.json();
 
-    // ✅ Validate inputs
     if (!studentId || !classId || !status) {
       return NextResponse.json(
         { success: false, message: "Missing required fields (studentId, classId, status)" },
@@ -18,9 +17,9 @@ export async function PUT(req) {
       );
     }
 
-    if(status === "unpaid"){
+    if (status === "unpaid") {
       return NextResponse.json(
-        { success: false, message: " দয়া করে পেমেন্ট ইতিহাস থেকে স্ট্যাটাস আপডেট করুন " },
+        { success: false, message: "দয়া করে পেমেন্ট ইতিহাস থেকে স্ট্যাটাস আপডেট করুন" },
         { status: 400 }
       );
     }
@@ -31,6 +30,7 @@ export async function PUT(req) {
         { status: 400 }
       );
     }
+
     const student = await Student.findOne({ _id: studentId, classId });
     if (!student) {
       return NextResponse.json(
@@ -38,98 +38,135 @@ export async function PUT(req) {
         { status: 404 }
       );
     }
-    
+
     const previousStatus = student.paymentStatus;
     const totalAmount = (student.tuitionFee || 0) + (student.coachingFee || 0);
-    const now = new Date();
 
-    // ✅ Month & Year (in Bengali)
+    const now = new Date();
     const paymentMonth = now.toLocaleString("bn-BD", {
       month: "long",
       year: "numeric",
     });
 
-    // ✅ Update total due amount based on new status
+    // -----------------------------
+    // UPDATE STUDENT PAYMENT STATUS
+    // -----------------------------
     if (status === "paid") {
       student.totalDueAmount = Math.max(student.totalDueAmount - totalAmount, 0);
-      student.totalPaidAmount += totalAmount
-    } 
+      student.totalPaidAmount += totalAmount;
+    }
 
     student.paymentStatus = status;
+
+    // -----------------------------
+    // PAYMENT HISTORY UPDATE
+    // -----------------------------
     const existing = await PaymentHistory.findOne({ studentId, paymentMonth });
 
     if (status === "paid") {
       if (existing) {
-        // 🔄 If record exists and was unpaid, update it to paid
         if (existing.paymentStatus === "unpaid") {
           existing.paymentStatus = "paid";
           existing.paymentDate = now;
           await existing.save();
         }
       } else {
-        // 🆕 If not exist, create new record
-        const newHistory = new PaymentHistory({
+        await new PaymentHistory({
           studentId,
           schoolId: student.schoolId,
           paymentMonth,
           totalAmount,
           paymentStatus: "paid",
           paymentDate: now,
-        });
-        await newHistory.save();
+        }).save();
       }
 
-      // ✅ Update school’s payment count
-      if (student.schoolId) {
-        await School.findByIdAndUpdate(
-          student.schoolId,
-          { $inc: { totalPaymentCount: 1 } },
-          { upsert: true }
-        );
-      }
+      // Increase payment count
+      await School.findByIdAndUpdate(student.schoolId, {
+        $inc: { totalPaymentCount: 1 },
+      });
+    }
 
-      // ✅ Send Expo push notification (if token exists)
-      if (student.expoToken) {
-        try {
-          await fetch("https://exp.host/--/api/v2/push/send", {
-            method: "POST",
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
+    // -----------------------------
+    // UPDATE SCHOOL MONTHLY PAYMENT DATA
+    // -----------------------------
+    const school = await School.findById(student.schoolId);
+
+    let monthlyPaymentData = school.totalMonthlyPaymentCollection || [];
+
+    // Remove old entry for same month
+    monthlyPaymentData = monthlyPaymentData.filter(
+      (entry) => entry.date !== paymentMonth
+    );
+
+    // Compute monthly totals fresh from DB
+    const allPaymentsThisMonth = await PaymentHistory.find({
+      schoolId: student.schoolId,
+      paymentMonth,
+    });
+
+    const totalMonthlyCollection = allPaymentsThisMonth
+      .filter((p) => p.paymentStatus === "paid")
+      .reduce((sum, p) => sum + p.totalAmount, 0);
+
+    const totalMonthlyDue = allPaymentsThisMonth
+      .filter((p) => p.paymentStatus === "unpaid")
+      .reduce((sum, p) => sum + p.totalAmount, 0);
+
+    // Add updated entry
+    monthlyPaymentData.push({
+      date: paymentMonth,
+      totalMonthlyCollection,
+      totalMonthlyDue,
+    });
+
+    // Keep only last 12 months
+    if (monthlyPaymentData.length > 12) {
+      monthlyPaymentData.shift();
+    }
+
+    await School.findByIdAndUpdate(student.schoolId, {
+      totalMonthlyPaymentCollection: monthlyPaymentData,
+    });
+
+    // -----------------------------
+    // SEND PUSH NOTIFICATION
+    // -----------------------------
+    if (status === "paid" && student.expoToken) {
+      try {
+        await fetch("https://exp.host/--/api/v2/push/send", {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            to: student.expoToken,
+            sound: "default",
+            title: "💰 পেমেন্ট সম্পন্ন হয়েছে!",
+            body: "আপনার সন্তানের মাসিক ফি সফলভাবে পরিশোধ করা হয়েছে।",
+            data: {
+              studentId: student._id.toString(),
+              guardianPhone: student.guardianPhone || null,
             },
-            body: JSON.stringify({
-              to: student.expoToken,
-              sound: "default",
-              title: "💰 পেমেন্ট সম্পন্ন হয়েছে!",
-              body: "প্রিয় অভিভাবক, আপনার সন্তানের মাসিক ফি সফলভাবে পরিশোধ করা হয়েছে। ধন্যবাদ আমাদের সঙ্গে থাকার জন্য।",
-              data: {
-                studentId: student._id.toString(),
-                guardianPhone: student.guardianPhone || null,
-              },
-            }),
-          });
-        } catch (pushErr) {
-          console.warn("⚠️ Push notification failed:", pushErr);
-        }
+          }),
+        });
+      } catch (pushErr) {
+        console.warn("⚠️ Push notification failed:", pushErr);
       }
     }
 
-    // 💾 Save student data
     await student.save();
 
     return NextResponse.json(
       {
         success: true,
-        message:
-          existing && existing.paymentStatus === "paid"
-            ? "Current month's payment updated successfully"
-            : !existing
-            ? "Payment recorded successfully"
-            : "Payment status updated successfully",
+        message: "Payment status updated successfully",
         updatedStudent: student,
       },
       { status: 200 }
     );
+
   } catch (err) {
     console.error("❌ Error updating payment status:", err);
     return NextResponse.json(

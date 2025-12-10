@@ -10,6 +10,8 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem("auth_token");
     localStorage.removeItem("schoolDetails");
+    localStorage.removeItem("schoolData");
+    
     // optional: redirect user after logout
     router.push("/");
   };

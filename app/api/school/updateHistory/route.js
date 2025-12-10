@@ -6,7 +6,9 @@ import PaymentHistory from "@/app/model/PaymentHistory";
 export async function PUT(req) {
   try {
     await connectDb();
+
     const { studentId, classId, paymentId } = await req.json();
+
     if (!studentId || !classId || !paymentId) {
       return Response.json(
         { success: false, message: "Missing required fields" },
@@ -22,7 +24,11 @@ export async function PUT(req) {
       );
     }
 
-    const paymentInfo = await PaymentHistory.findOne({ _id: paymentId, studentId });
+    const paymentInfo = await PaymentHistory.findOne({
+      _id: paymentId,
+      studentId,
+    });
+
     if (!paymentInfo) {
       return Response.json(
         { success: false, message: "Payment record not found" },
@@ -36,76 +42,119 @@ export async function PUT(req) {
     const totalAmount =
       (student.tuitionFee || 0) + (student.coachingFee || 0);
 
+    // Bengali Month + Year (MUST HAVE!)
+    const paymentMonth = paymentInfo.paymentMonth;
+
+    // ---- Update student due & paid amounts ----
     if (previousStatus === "unpaid" && newStatus === "paid") {
       student.totalDueAmount = Math.max(student.totalDueAmount - totalAmount, 0);
-      student.totalPaidAmount +=totalAmount
+      student.totalPaidAmount += totalAmount;
     } else if (previousStatus === "paid" && newStatus === "unpaid") {
       student.totalDueAmount += totalAmount;
       student.totalPaidAmount -= totalAmount;
-      student.paymentStatus = "unpaid";
-
     }
+
+    // Update main fields
     student.paymentStatus = newStatus;
     paymentInfo.paymentStatus = newStatus;
     paymentInfo.paymentDate = new Date();
-    
+
     await student.save();
     await paymentInfo.save();
 
-    if (previousStatus === "unpaid" && newStatus === "paid") {
-      if (student.schoolId) {
-        await School.findByIdAndUpdate(student.schoolId, {
-          $inc: { totalPaymentCount: 1 },
-        });
+    // ===============================
+    //   UPDATE SCHOOL MONTHLY TOTAL
+    // ===============================
+    if (student.schoolId) {
+      const school = await School.findById(student.schoolId);
+
+      let monthlyPaymentData = school.totalMonthlyPaymentCollection || [];
+
+      // Remove old entry for same month
+      monthlyPaymentData = monthlyPaymentData.filter(
+        (entry) => entry.date !== paymentMonth
+      );
+
+      // Fetch all payments of this month again
+      const payments = await PaymentHistory.find({
+        schoolId: student.schoolId,
+        paymentMonth,
+      });
+
+      const totalMonthlyCollection = payments
+        .filter((p) => p.paymentStatus === "paid")
+        .reduce((sum, p) => sum + p.totalAmount, 0);
+
+      const totalMonthlyDue = payments
+        .filter((p) => p.paymentStatus === "unpaid")
+        .reduce((sum, p) => sum + p.totalAmount, 0);
+
+      // Insert updated entry
+      monthlyPaymentData.push({
+        date: paymentMonth,
+        totalMonthlyCollection,
+        totalMonthlyDue,
+      });
+
+      // Keep only 12 months
+      if (monthlyPaymentData.length > 12) {
+        monthlyPaymentData.shift();
       }
-    
-      if (student.expoToken) {
-        const title = "💰 পেমেন্ট সম্পন্ন হয়েছে!";
-        const notificationBody =
-          "প্রিয় অভিভাবক, আপনার সন্তানের মাসিক ফি সফলভাবে পরিশোধ করা হয়েছে। ধন্যবাদ আমাদের সঙ্গে থাকার জন্য।";
-      
-          
-        const message = {
-          to: student.expoToken,
-          sound: "default",
-          title,
-          body: notificationBody,
-          data: {
-            studentId: student._id.toString(),
-            guardianPhone: student.guardianPhone || null,
+
+      await School.findByIdAndUpdate(student.schoolId, {
+        totalMonthlyPaymentCollection: monthlyPaymentData,
+      });
+    }
+
+    // ===============================
+    //   SEND PUSH NOTIFICATION
+    // ===============================
+    if (
+      previousStatus === "unpaid" &&
+      newStatus === "paid" &&
+      student.expoToken
+    ) {
+      const message = {
+        to: student.expoToken,
+        sound: "default",
+        title: "💰 পেমেন্ট সম্পন্ন হয়েছে!",
+        body: "প্রিয় অভিভাবক, আপনার সন্তানের মাসিক ফি সফলভাবে পরিশোধ করা হয়েছে।",
+        data: {
+          studentId: student._id.toString(),
+          guardianPhone: student.guardianPhone || null,
+        },
+      };
+
+      try {
+        await fetch("https://exp.host/--/api/v2/push/send", {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
           },
-        };
-
-        try {
-          await fetch("https://exp.host/--/api/v2/push/send", {
-            method: "POST",
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(message),
-          });
-        } catch (pushErr) {
-          console.warn("⚠️ Push notification failed:", pushErr);
-        }
+          body: JSON.stringify(message),
+        });
+      } catch (err) {
+        console.warn("⚠️ Push notification failed:", err);
       }
     }
 
-      const studentData={
-      _id:student._id,
-      studentName:student.name,
-      className:student.className,
-      guardianName:student.guardianName ||"",
-      guardianPhone:student.guardianPhone||"",
-      roll:student.roll,
-      section:student.section,
-      tutionFee:student.tuitionFee,
-      coachingFee:student.coachingFee,
-      paymentStatus:student.paymentStatus,
-      address:student.address,
-      totalPaidAmount:student.totalPaidAmount,
-      totalDueAmount:student.totalDueAmount
-    }
+    // Response Payload
+    const studentData = {
+      _id: student._id,
+      studentName: student.name,
+      className: student.className,
+      guardianName: student.guardianName || "",
+      guardianPhone: student.guardianPhone || "",
+      roll: student.roll,
+      section: student.section,
+      tutionFee: student.tuitionFee,
+      coachingFee: student.coachingFee,
+      paymentStatus: student.paymentStatus,
+      address: student.address,
+      totalPaidAmount: student.totalPaidAmount,
+      totalDueAmount: student.totalDueAmount,
+    };
 
     return Response.json(
       {

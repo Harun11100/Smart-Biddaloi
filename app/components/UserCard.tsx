@@ -18,7 +18,7 @@ const UserCard: React.FC<UserCardProps> = ({ type, count, title }) => {
   return (
     <div
       className={`
-        flex-1 min-w-[150px] rounded-2xl p-5
+        flex-1 min-w-[120px] rounded-2xl p-5
         bg-gradient-to-br ${bgColors[title ?? type ?? ""] ?? "from-gray-50 to-gray-200"}
         shadow-sm border border-gray-200
         hover:shadow-md transition-all duration-300

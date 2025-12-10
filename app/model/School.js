@@ -48,7 +48,11 @@ const schoolSchema = new mongoose.Schema(
     terms: { type: Boolean, default: false },
     expoToken: { type: String, default: null },
     totalStudents: { type: Number, default: 0 },
+    maleStudents: { type: Number, default: 0 },
+    femaleStudents: { type: Number, default: 0 },
     totalTeachers: { type: Number, default: 0 },
+    totalMonthlyPaymentReceived: { type: Number, default: 0 },
+    totalMonthlyPaymentDue: { type: Number, default: 0 },
     totalNotice: { type: Number, default: 0 },
     totalPaymentCount: { type: Number, default: 0 },
     appUpdateUrl: { type: String, default: "" },
@@ -62,11 +66,14 @@ const schoolSchema = new mongoose.Schema(
     loginOTPExpiry: { type: Date, default: null },
     passOTP: { type: String, default: null },
     passOTPExpiry: { type: Date, default: null },
+    weeklyAttendanceChartData: { type: Array, default: [] },
+    totalMonthlyPaymentCollection: { type: Array, default: [] },
+    totalStudentFees: { type: Number, default: 0 }
+    
   },
   { timestamps: true }
 );
 
-// Password hashing before save
 schoolSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   try {

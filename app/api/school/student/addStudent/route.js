@@ -22,37 +22,48 @@ export async function POST(req) {
       classId,
     } = body;
 
-    // Basic validation
-    if (
-      !name ||
-      !roll ||
-      !className ||
-      !gender ||
-      !guardianPhone ||
-      !tuitionFee ||
-      !coachingFee ||
-      !address ||
-      !schoolId ||
-      !classId
-    ) {
+    // Required fields
+    const requiredFields = [
+      "name",
+      "roll",
+      "className",
+      "gender",
+      "guardianPhone",
+      "tuitionFee",
+      "coachingFee",
+      "address",
+      "schoolId",
+      "classId",
+    ];
+
+    const missing = requiredFields.filter((field) => !body[field]);
+
+    if (missing.length > 0) {
       return NextResponse.json(
-        { success: false, message: "সব প্রয়োজনীয় তথ্য প্রদান করুন।" },
+        {
+          success: false,
+          message: "Please provide all required fields.",
+          missingFields: missing,
+        },
         { status: 400 }
       );
     }
 
     await connectDb();
 
-    // Check if student already exists
+    // Check if student already exists in same class & school
     const existing = await Student.findOne({ roll, classId, schoolId });
+
     if (existing) {
       return NextResponse.json(
-        { success: false, message: "এই রোল নম্বরের ছাত্র ইতিমধ্যে আছে।" },
+        { success: false, message: "A student with this roll already exists." },
         { status: 409 }
       );
     }
 
-    // Create new student
+    const totalMonthlyFees = Number(tuitionFee) + Number(coachingFee);
+
+    // Create student
     const newStudent = await Student.create({
       name,
       roll,
@@ -63,21 +74,32 @@ export async function POST(req) {
       guardianName,
       tuitionFee,
       coachingFee,
+      totalMonthlyFees,
       address,
       schoolId,
       classId,
     });
 
-    // Increment counts concurrently
+    // Update counts concurrently
     await Promise.all([
       Class.findByIdAndUpdate(classId, { $inc: { studentCount: 1 } }),
       School.findByIdAndUpdate(schoolId, { $inc: { totalStudents: 1 } }),
+      School.findByIdAndUpdate(schoolId, { $inc: { totalStudentFees: totalMonthlyFees } })
     ]);
+
+    // Update gender counters
+    const genderField =
+      gender === "male" ? "maleStudents" : gender === "female" ? "femaleStudents" : null;
+
+    if (genderField) {
+      await School.findByIdAndUpdate(schoolId, { $inc: { [genderField]: 1 } });
+     
+    }
 
     return NextResponse.json(
       {
         success: true,
-        message: "ছাত্র সফলভাবে যুক্ত হয়েছে!",
+        message: "Student added successfully!",
         student: newStudent,
       },
       { status: 201 }
@@ -85,7 +107,7 @@ export async function POST(req) {
   } catch (error) {
     console.error("Error creating student:", error);
     return NextResponse.json(
-      { success: false, message: "সার্ভার ত্রুটি হয়েছে।" },
+      { success: false, message: "A server error occurred." },
       { status: 500 }
     );
   }
