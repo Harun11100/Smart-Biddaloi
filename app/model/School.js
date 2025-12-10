@@ -22,6 +22,7 @@ const schoolSchema = new mongoose.Schema(
       match: [/\S+@\S+\.\S+/, "Invalid email format"],
     },
     phone: { type: String, required: true, unique: true, trim: true },
+    slug: { type: String, required: true, unique: true, trim: true },
     contactNumber: {
       type: String,
       required: true,

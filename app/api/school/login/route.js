@@ -25,7 +25,8 @@ export async function POST(req) {
       );
     }
 
-    const school = await School.findOne({ phone: phoneTrimmed });
+    const school = await School.findOne({ phone: phoneTrimmed});
+    console.log("Found school:", school);
     if (!school) {
       return NextResponse.json(
         { message: "School not found with this phone" },
@@ -79,6 +80,7 @@ export async function POST(req) {
       schoolId: school._id,
       schoolName: school.schoolName,
       phone: school.phone,
+      slug: school.slug||"slug-not-set",
     };
 
     return NextResponse.json(

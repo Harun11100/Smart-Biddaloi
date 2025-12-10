@@ -1,22 +1,25 @@
 import Image from "next/image";
 
 interface UserCardProps {
-  type: "student" | "teacher" | "parent" | "staff" | string;
+  type?: string; // can match stats title like "Students", "Teachers", etc.
+  count?: number;
+  title?: string;
 }
 
-const UserCard: React.FC<UserCardProps> = ({ type }) => {
+const UserCard: React.FC<UserCardProps> = ({ type, count, title }) => {
+  // Map the title/type to a gradient
   const bgColors: Record<string, string> = {
-    student: "from-green-50 to-green-200",
-    teacher: "from-blue-50 to-blue-200",
-    parent: "from-purple-50 to-purple-200",
-    staff: "from-yellow-50 to-yellow-200",
+    Students: "from-green-50 to-green-200",
+    Teachers: "from-blue-50 to-blue-200",
+    "Payment Count": "from-purple-50 to-purple-200",
+    Notice: "from-yellow-50 to-yellow-200",
   };
 
   return (
     <div
       className={`
         flex-1 min-w-[150px] rounded-2xl p-5
-        bg-gradient-to-br ${bgColors[type] ?? "from-gray-50 to-gray-200"}
+        bg-gradient-to-br ${bgColors[title ?? type ?? ""] ?? "from-gray-50 to-gray-200"}
         shadow-sm border border-gray-200
         hover:shadow-md transition-all duration-300
       `}
@@ -37,12 +40,12 @@ const UserCard: React.FC<UserCardProps> = ({ type }) => {
 
       {/* Number */}
       <h1 className="text-3xl font-semibold mt-6 mb-2 text-gray-900 tracking-tight">
-        1,234
+        {count ?? 0}
       </h1>
 
       {/* Label */}
       <h2 className="text-sm font-medium text-gray-700 capitalize">
-        {type}s
+        {title ?? type ?? "Unknown"}
       </h2>
     </div>
   );

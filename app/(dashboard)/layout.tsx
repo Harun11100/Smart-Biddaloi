@@ -1,31 +1,60 @@
+'use client'
 import Menu from "@/app/components/Menu";
 import Navbar from "@/app/components/Navbar";
 import Image from "next/image";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 
 export default function DashboardLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
+
+  const params = useParams();
+  const schoolId = params.schoolId;
+
   return (
-    <div className="h-screen flex">
-      {/* LEFT */}
-      <div className="w-[14%] md:w-[8%] lg:w-[16%] xl:w-[14%] p-4">
-        <Link
-          href="/"
-          className="flex items-center justify-center lg:justify-start gap-2"
+    <div className="h-screen flex overflow-hidden bg-[#f8fbff]">
+
+      <aside
+        className="
+        w-[15%] md:w-[10%] lg:w-[16%] xl:w-[14%] 
+        bg-white border-r border-gray-200 
+        flex flex-col shadow-sm
+        "
+      >
+
+        <div className="p-4 sticky top-0 bg-white z-20  border-gray-200 flex items-center justify-center lg:justify-start gap-2">
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/smart.png" alt="logo" width={48} height={48} />
+            <span className="hidden lg:block font-bold text-gray-800">
+              Smart Biddaloi
+            </span>
+          </Link>
+        </div>
+
+        {/* SCROLLABLE MENU */}
+        <div
+          className="
+          flex-1 overflow-y-auto px-2 pb-8 pt-0
+          custom-scrollbar
+        "
         >
-          <Image src="/smart.png" alt="logo" width={52} height={52} />
-          <span className="hidden lg:block font-bold">Smart Biddaloi</span>
-        </Link>
-        <Menu />
-      </div>
-      {/* RIGHT */}
-      <div className="w-[86%] md:w-[92%] lg:w-[84%] xl:w-[86%] bg-[#F7F8FA] overflow-scroll flex flex-col">
-        <Navbar />
-        {children}
-      </div>
+          <Menu schoolId={schoolId}/>
+        </div>
+      </aside>
+
+      {/* RIGHT CONTENT AREA */}
+      <main
+        className="
+        flex-1 flex flex-col 
+        overflow-y-auto
+        "
+      >
+        <Navbar schoolId={schoolId} />
+        <div className="px-4 py-4">{children}</div>
+      </main>
     </div>
   );
 }

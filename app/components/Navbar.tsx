@@ -1,6 +1,18 @@
+"use client"
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+
 
 const Navbar = () => {
+
+    const router = useRouter();
+
+  const handleLogout = () => {
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("schoolDetails");
+    // optional: redirect user after logout
+    router.push("/");
+  };
   return (
     <div className="flex items-center justify-between px-4 py-3 bg-white/70 backdrop-blur-md border-b border-gray-200 ">
       
@@ -19,8 +31,10 @@ const Navbar = () => {
 
         {/* Message */}
          <div className="relative bg-gray-100 p-2 rounded-full hover:bg-gray-200 cursor-pointer transition">
-          <Image src="/logout.png" alt="logout" width={20} height={20} />
-        </div>
+      <button onClick={handleLogout} className="flex items-center">
+        <Image src="/logout.png" alt="logout" width={20} height={20} />
+      </button>
+     </div>
         <div className="relative bg-gray-100 p-2 rounded-full hover:bg-gray-200 cursor-pointer transition">
           <Image src="/setting.png" alt="setting" width={20} height={20} />
         </div>

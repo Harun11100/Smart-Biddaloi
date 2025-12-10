@@ -26,15 +26,17 @@ export default function OwnerLoginPage() {
   const [otp, setOtp] = useState("");
   const [schoolData, setSchoolData] = useState(null);
   const [verifying, setVerifying] = useState(false);
-
+  console.log(schoolData);
   // Check auto login
   useEffect(() => {
     const stored = localStorage.getItem("schoolDetails");
     if (stored) {
       const school = JSON.parse(stored);
-      router.push(
-        `/admin`
-      );
+      // router.push(
+      //   `/admin/${school.slug}`
+      // );
+
+      console.log("stored school:",school)
       return;
     }
     setCheckingStorage(false);
@@ -43,7 +45,7 @@ export default function OwnerLoginPage() {
   const onFormSubmit = async (values) => {
     setLoading(true);
     try {
-      const res = await axios.post(`/admin`, {
+      const res = await axios.post(`/api/school/login`, {
         phone: values.phone,
         password: values.password,
       });
@@ -71,9 +73,9 @@ export default function OwnerLoginPage() {
         localStorage.setItem("auth_token", res.data.token);
         localStorage.setItem("schoolDetails", JSON.stringify(schoolData));
 
-        router.push(
-          `/dashboard/${schoolData.schoolId}/admin`
-        );
+        // router.push(
+        //   `/admin/${schoolData.slug}`
+        // );
       } else {
         alert("ভুল কোড প্রদান করেছেন!");
       }
@@ -84,12 +86,12 @@ export default function OwnerLoginPage() {
     }
   };
 
-  if (checkingStorage)
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>
-      </div>
-    );
+  // if (checkingStorage)
+  //   return (
+  //     <div className="h-screen flex items-center justify-center">
+  //       <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+  //     </div>
+  //   );
 
   return (
     <div className="h-screen flex items-center justify-center bg-lamaSkyLight">
