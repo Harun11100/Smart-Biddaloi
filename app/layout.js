@@ -6,7 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Smart Biddaloi",
+  title: "Smart Biddaloy",
   description: "A modern School Management System",
 };
 

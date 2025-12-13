@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -7,156 +7,75 @@ import InputField from "../InputField";
 import Image from "next/image";
 
 const schema = z.object({
-  username: z
-    .string()
-    .min(3, { message: "Username must be at least 3 characters long!" })
-    .max(20, { message: "Username must be at most 20 characters long!" }),
+  name: z.string().min(1, { message: "Name is required!" }),
+  userName: z.string().optional(),
   email: z.string().email({ message: "Invalid email address!" }),
-  password: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters long!" }),
-  firstName: z.string().min(1, { message: "First name is required!" }),
-  lastName: z.string().min(1, { message: "Last name is required!" }),
+  password: z.string().min(4, { message: "Pin must be at least 4 characters!" }),
+  gender: z.enum(["male", "female"]).optional(),
   phone: z.string().min(1, { message: "Phone is required!" }),
-  address: z.string().min(1, { message: "Address is required!" }),
-  bloodType: z.string().min(1, { message: "Blood Type is required!" }),
-  birthday: z.date({ message: "Birthday is required!" }),
-  sex: z.enum(["male", "female"], { message: "Sex is required!" }),
-  img: z.instanceof(File, { message: "Image is required" }),
+  role: z.string().min(1, { message: "Role is required!" }),
+  address: z.string().optional(),
+  bloodGroup: z.string().optional(),
+  nid: z.string().optional(),
+  classTeacher: z.string().optional(),
+  subjects: z.string().optional(),
 });
 
 type Inputs = z.infer<typeof schema>;
 
-const TeacherForm = ({
-  type,
-  data,
-}: {
-  type: "create" | "update";
-  data?: any;
-}) => {
+interface TeacherFormProps {
+  type: "create";
+  data?: Partial<Inputs>;
+  onSubmit: (values: Inputs, resetForm: () => void) => void;
+  loading?: boolean;
+}
+
+const TeacherForm = ({ type, data, onSubmit, loading }: TeacherFormProps) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<Inputs>({
     resolver: zodResolver(schema),
+    defaultValues: data || {},
   });
 
-  const onSubmit = handleSubmit((data) => {
-    console.log(data);
-  });
+  const submitHandler = handleSubmit((values) => onSubmit(values, () => reset()));
 
   return (
-    <form className="flex flex-col gap-8" onSubmit={onSubmit}>
+    <form className="flex flex-col gap-6" onSubmit={submitHandler}>
       <h1 className="text-xl font-semibold">Create a new teacher</h1>
-      <span className="text-xs text-gray-400 font-medium">
-        Authentication Information
-      </span>
-      <div className="flex justify-between flex-wrap gap-4">
-        <InputField
-          label="Username"
-          name="username"
-          defaultValue={data?.username}
-          register={register}
-          error={errors?.username}
-        />
-        <InputField
-          label="Email"
-          name="email"
-          defaultValue={data?.email}
-          register={register}
-          error={errors?.email}
-        />
-        <InputField
-          label="Password"
-          name="password"
-          type="password"
-          defaultValue={data?.password}
-          register={register}
-          error={errors?.password}
-        />
+
+      <span className="text-xs text-gray-400 font-medium">Authentication Information</span>
+      <div className="flex flex-wrap gap-4">
+        <InputField label="Username" name="userName" register={register} defaultValue={data?.userName} error={errors.userName} />
+        <InputField label="Email" name="email" register={register} defaultValue={data?.email} error={errors.email} />
+        <InputField label="Pin" type="password" name="password" register={register} defaultValue={data?.password} error={errors.password} />
       </div>
-      <span className="text-xs text-gray-400 font-medium">
-        Personal Information
-      </span>
-      <div className="flex justify-between flex-wrap gap-4">
-        <InputField
-          label="First Name"
-          name="firstName"
-          defaultValue={data?.firstName}
-          register={register}
-          error={errors.firstName}
-        />
-        <InputField
-          label="Last Name"
-          name="lastName"
-          defaultValue={data?.lastName}
-          register={register}
-          error={errors.lastName}
-        />
-        <InputField
-          label="Phone"
-          name="phone"
-          defaultValue={data?.phone}
-          register={register}
-          error={errors.phone}
-        />
-        <InputField
-          label="Address"
-          name="address"
-          defaultValue={data?.address}
-          register={register}
-          error={errors.address}
-        />
-        <InputField
-          label="Blood Type"
-          name="bloodType"
-          defaultValue={data?.bloodType}
-          register={register}
-          error={errors.bloodType}
-        />
-        <InputField
-          label="Birthday"
-          name="birthday"
-          defaultValue={data?.birthday}
-          register={register}
-          error={errors.birthday}
-          type="date"
-        />
+
+      <span className="text-xs text-gray-400 font-medium">Personal Information</span>
+      <div className="flex flex-wrap gap-4">
+        <InputField label="Full Name" name="name" register={register} defaultValue={data?.name} error={errors.name} />
+        <InputField label="Phone" name="phone" register={register} defaultValue={data?.phone} error={errors.phone} />
+        <InputField label="Role" name="role" register={register} defaultValue={data?.role} error={errors.role} />
+        <InputField label="Address" name="address" register={register} defaultValue={data?.address} error={errors.address} />
+        <InputField label="Blood Group" name="bloodGroup" register={register} defaultValue={data?.bloodGroup} error={errors.bloodGroup} />
+        <InputField label="NID" name="nid" register={register} defaultValue={data?.nid} error={errors.nid} />
+        <InputField label="Class Teacher Of" name="classTeacher" register={register} defaultValue={data?.classTeacher} error={errors.classTeacher} />
+        <InputField label="Subjects (comma-separated)" name="subjects" register={register} defaultValue={data?.subjects} error={errors.subjects} />
         <div className="flex flex-col gap-2 w-full md:w-1/4">
-          <label className="text-xs text-gray-500">Sex</label>
-          <select
-            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
-            {...register("sex")}
-            defaultValue={data?.sex}
-          >
+          <label className="text-xs text-gray-500">Gender</label>
+          <select className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full" {...register("gender")} defaultValue={data?.gender || "male"}>
             <option value="male">Male</option>
             <option value="female">Female</option>
           </select>
-          {errors.sex?.message && (
-            <p className="text-xs text-red-400">
-              {errors.sex.message.toString()}
-            </p>
-          )}
-        </div>
-        <div className="flex flex-col gap-2 w-full md:w-1/4 justify-center">
-          <label
-            className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer"
-            htmlFor="img"
-          >
-            <Image src="/upload.png" alt="" width={28} height={28} />
-            <span>Upload a photo</span>
-          </label>
-          <input type="file" id="img" {...register("img")} className="hidden" />
-          {errors.img?.message && (
-            <p className="text-xs text-red-400">
-              {errors.img.message.toString()}
-            </p>
-          )}
+          {errors.gender && <p className="text-xs text-red-400">{errors.gender.message}</p>}
         </div>
       </div>
-      <button className="bg-blue-400 text-white p-2 rounded-md">
-        {type === "create" ? "Create" : "Update"}
+
+      <button type="submit" className={`bg-blue-500 text-white p-2 rounded-md ${loading ? "opacity-50 cursor-not-allowed" : ""}`} disabled={loading}>
+        {type === "create" ? "Create Teacher" : "Update Teacher"}
       </button>
     </form>
   );
