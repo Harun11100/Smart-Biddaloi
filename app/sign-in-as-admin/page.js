@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Formik } from "formik";
-import * as Yup from "Yup";
+import * as Yup from "yup";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
