@@ -203,24 +203,24 @@ export default function AdminPage() {
             </div>
 
             <div className="col-span-1 lg:col-span-2 h-[420px] bg-white shadow rounded-xl p-4">
-              <AttendanceChart slug={slug} />
+              <AttendanceChart/>
             </div>
           </div>
 
           {/* FINANCE CHART */}
           <div className="h-[480px] bg-white shadow rounded-xl p-4">
-            <FinanceChart slug={slug} />
+            <FinanceChart />
           </div>
         </div>
 
         {/* RIGHT SECTION */}
         <div className="w-full xl:w-1/3 flex flex-col gap-8">
           <div className="bg-white shadow rounded-xl p-4">
-            <EventCalendar slug={slug} />
+            <EventCalendar />
           </div>
 
           <div className="bg-white shadow rounded-xl p-4">
-            <Announcements slug={slug} />
+            <Announcements/>
           </div>
         </div>
       </div>
