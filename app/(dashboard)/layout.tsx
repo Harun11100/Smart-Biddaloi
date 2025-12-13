@@ -12,7 +12,7 @@ export default function DashboardLayout({
 }) {
 
   const params = useParams();
-  const schoolId = params.slug;
+  const slug = params.slug;
 
   return (
     <div className="h-screen flex overflow-hidden bg-[#f8fbff]">
@@ -41,7 +41,7 @@ export default function DashboardLayout({
           custom-scrollbar
         "
         >
-          <Menu schoolId={schoolId}/>
+          <Menu slug={slug}/>
         </div>
       </aside>
 
@@ -52,7 +52,7 @@ export default function DashboardLayout({
         overflow-y-auto
         "
       >
-        <Navbar schoolId={schoolId} />
+        <Navbar />
         <div className="px-4 py-4">{children}</div>
       </main>
     </div>
