@@ -7,7 +7,7 @@ import * as Yup from "yup";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 
 const validationSchema = Yup.object().shape({
   phone: Yup.string()

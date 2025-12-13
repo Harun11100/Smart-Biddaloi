@@ -13,7 +13,7 @@ interface ClassData {
   guardianPhone?: string | null;
 }
 
-export default function ClassListForAttendance() {
+export default function ClassList() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const schoolId = searchParams.get("schoolId") || "";

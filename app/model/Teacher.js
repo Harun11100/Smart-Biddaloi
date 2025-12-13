@@ -15,9 +15,12 @@ const teacherSchema = new mongoose.Schema(
     },
 
     name: { type: String, required: true },
-
+    userName: { type: String},
     password: { type: String, required: true, select: false },
-
+    gender: { type: String },
+    nid: { type: String },
+    address: { type: String },
+    bloodGroup: { type: String },
     
     phone: {
       type: String,
