@@ -23,19 +23,18 @@ export default function AccountsPage() {
         className="z-10 w-full max-w-md bg-white/70 backdrop-blur-xl shadow-xl rounded-3xl p-8 border border-white"
       >
 
-        {/* Logo Section */}
         <motion.div
           initial={{ y: -15, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
           className="w-28 h-28 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-[#E8F4FF] to-white shadow-md flex items-center justify-center"
         >
-          <Image src="/smart.png" alt="Logo" width={90} height={90} />
+          <Image src="/smartbiddaloy_nobg.png" alt="Logo" width={120} height={120} />
         </motion.div>
 
         {/* Text */}
         <h1 className="text-2xl font-semibold text-center text-gray-800 mb-2">
-          Welcome to Smart Biddaloi
+          Welcome to Smart Biddaloy
         </h1>
         <p className="text-gray-500 text-center mb-8">
           Choose a login option

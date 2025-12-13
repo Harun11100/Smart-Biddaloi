@@ -12,7 +12,7 @@ export default function DashboardLayout({
 }) {
 
   const params = useParams();
-  const schoolId = params.schoolId;
+  const schoolId = params.slug;
 
   return (
     <div className="h-screen flex overflow-hidden bg-[#f8fbff]">
@@ -27,9 +27,9 @@ export default function DashboardLayout({
 
         <div className="p-4 sticky top-0 bg-white z-20  border-gray-200 flex items-center justify-center lg:justify-start gap-2">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/smart.png" alt="logo" width={48} height={48} />
+            <Image src="/smartbiddaloy.png" alt="logo" width={48} height={48} />
             <span className="hidden lg:block font-bold text-gray-800">
-              Smart Biddaloi
+              Smart Biddaloy
             </span>
           </Link>
         </div>

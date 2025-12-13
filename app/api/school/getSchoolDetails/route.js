@@ -44,17 +44,14 @@ export async function GET(req) {
     }
 
     // 4️⃣ Fetch school
-    const school = await School.findById({slug:slug}).select("-password -__v");
+    const school = await School.findOne({slug:slug}).select("-password -__v");
     if (!school) {
       return new Response(
         JSON.stringify({ success: false, message: "school not found" }),
         { status: 404 }
       );
     }
-
     
-
-    // ✅ Return school data
     return new Response(JSON.stringify({ success: true, school }), { status: 200 });
 
   } catch (error) {
