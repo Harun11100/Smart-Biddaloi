@@ -25,8 +25,8 @@ const data = [
   },
 ];
 
-const CountChart = ( {slug}) => {
-  
+const CountChart = ({}) => {
+
   return (
     <div className="bg-white rounded-xl w-full h-full p-4">
       {/* TITLE */}

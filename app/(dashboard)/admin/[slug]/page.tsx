@@ -13,8 +13,8 @@ import CountChart from "@/app/components/CountChart";
 import EventCalendar from "@/app/components/EventCalendar";
 import FinanceChart from "@/app/components/FinanceChart";
 import UserCard from "@/app/components/UserCard";
+import AdminDashboardLayout from "@/app/components/admin/layout/AdminDashboardLayout";
 
-// ============= TYPES =============
 type SchoolData = {
   _id: string;
   totalStudents: number;
@@ -142,6 +142,7 @@ export default function AdminPage() {
   ];
 
   return (
+    <AdminDashboardLayout slug={slug} >
     <div className="p-4 md:p-6 lg:p-8 bg-gray-50">
       {/* OTP Modal */}
       {otpModal && (
@@ -199,7 +200,7 @@ export default function AdminPage() {
           {/* COUNT + ATTENDANCE */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="col-span-1 h-[420px] bg-white shadow rounded-xl p-4">
-              <CountChart slug={slug} />
+              <CountChart  />
             </div>
 
             <div className="col-span-1 lg:col-span-2 h-[420px] bg-white shadow rounded-xl p-4">
@@ -226,6 +227,7 @@ export default function AdminPage() {
       </div>
 
     </div>
+     </AdminDashboardLayout>
   );
 }
 
