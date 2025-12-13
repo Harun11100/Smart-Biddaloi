@@ -5,7 +5,7 @@ import Link from "next/link";
 import { role } from "@/app/lib/data";
 
 interface MenuProps {
-  schoolId: string;
+  slug: string;
 }
 
 interface MenuItem {
@@ -20,7 +20,7 @@ interface MenuSection {
   items: MenuItem[];
 }
 
-const Menu: React.FC<MenuProps> = ({ schoolId }) => {
+const Menu: React.FC<MenuProps> = ({ slug }) => {
   const menuItems: MenuSection[] = [
     {
       title: "MENU",
@@ -34,67 +34,67 @@ const Menu: React.FC<MenuProps> = ({ schoolId }) => {
         {
           icon: "/teacher.png",
           label: "Teachers",
-          href: `/list/teachers/${schoolId}`,
+          href: `/list/teachers/${slug}`,
           visible: ["admin", "teacher"],
         },
         {
           icon: "/student.png",
           label: "Students",
-          href: `/list/students/${schoolId}`,
+          href: `/list/students/${slug}`,
           visible: ["admin", "teacher"],
         },
         {
           icon: "/subject.png",
           label: "Subjects",
-          href: `/list/subjects/${schoolId}`,
+          href: `/list/subjects/${slug}`,
           visible: ["admin"],
         },
         {
           icon: "/class.png",
           label: "Classes",
-          href: `/list/classes/${schoolId}`,
+          href: `/list/classes/${slug}`,
           visible: ["admin", "teacher"],
         },
         {
           icon: "/lesson.png",
           label: "Lessons",
-          href: `/list/lessons/${schoolId}`,
+          href: `/list/lessons/${slug}`,
           visible: ["admin", "teacher"],
         },
         {
           icon: "/exam.png",
           label: "Exams",
-          href: `/list/exams/${schoolId}`,
+          href: `/list/exams/${slug}`,
           visible: ["admin", "teacher", "student", "parent"],
         },
         {
           icon: "/assignment.png",
           label: "Assignments",
-          href: `/list/assignments/${schoolId}`,
+          href: `/list/assignments/${slug}`,
           visible: ["admin", "teacher", "student", "parent"],
         },
         {
           icon: "/result.png",
           label: "Results",
-          href: `/list/results/${schoolId}`,
+          href: `/list/results/${slug}`,
           visible: ["admin", "teacher", "student", "parent"],
         },
         {
           icon: "/attendance.png",
           label: "Attendance",
-          href: `/list/attendance/${schoolId}`,
+          href: `/list/attendance/${slug}`,
           visible: ["admin", "teacher", "student", "parent"],
         },
         {
           icon: "/calendar.png",
           label: "Events",
-          href: `/list/events/${schoolId}`,
+          href: `/list/events/${slug}`,
           visible: ["admin", "teacher", "student", "parent"],
         },
         {
           icon: "/announcement.png",
           label: "Announcements",
-          href: `/list/announcements/${schoolId}`,
+          href: `/list/announcements/${slug}`,
           visible: ["admin", "teacher", "student", "parent"],
         },
       ],
