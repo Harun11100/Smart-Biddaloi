@@ -7,6 +7,7 @@ import FormModal from "@/app/components/FormModal";
 import Table from "@/app/components/Table";
 import TableSearch from "@/app/components/TableSearch";
 import { TrashIcon, EyeIcon, PlusIcon } from "@heroicons/react/24/solid";
+import FormUpdateModal from "@/app/components/FormUpdateModal";
 
 const columns = [
   { header: "Name", accessor: "name" },
@@ -70,7 +71,7 @@ export default function StudentListClient({ students, schoolId, classId, slug })
             {loadingDelete === item._id ? "..." : <TrashIcon className="w-4 h-4" />}
           </button>
 
-          <FormModal table="student" type="delete" id={item._id} />
+          <FormUpdateModal studentId={item._id} schoolId={schoolId} data={item} />
         </div>
       </td>
     </tr>

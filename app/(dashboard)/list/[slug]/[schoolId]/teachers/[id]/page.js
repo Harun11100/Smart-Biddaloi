@@ -15,6 +15,6 @@ export default async function SingleTeacherPage({ params }) {
   if (!teacher) {
     return <div className="p-4 text-red-500">Teacher not found</div>;
   }
-
+  
   return <TeacherClients teacher={JSON.parse(JSON.stringify(teacher))} />;
 }
