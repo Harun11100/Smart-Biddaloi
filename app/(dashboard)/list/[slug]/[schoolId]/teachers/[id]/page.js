@@ -1,6 +1,6 @@
 import Teacher from "@/app/model/Teacher";
 import connectDb from "@/app/utils/db";
-import TeacherClient from "./TeacherClient";
+import TeacherClients from "./TeacherCLient.js";
 
 export default async function SingleTeacherPage({ params }) {
   const { id } = params;
@@ -13,12 +13,8 @@ export default async function SingleTeacherPage({ params }) {
     .lean();
 
   if (!teacher) {
-    return (
-      <div className="p-4 text-red-500 text-center">
-        Teacher not found
-      </div>
-    );
+    return <div className="p-4 text-red-500">Teacher not found</div>;
   }
 
-  return <TeacherClient teacher={teacher} />;
+  return <TeacherClients teacher={JSON.parse(JSON.stringify(teacher))} />;
 }

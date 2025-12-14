@@ -1,3 +1,5 @@
+// /[id]/TeacherClient.js
+
 "use client";
 
 import Announcements from "@/app/components/Announcements";
@@ -8,7 +10,7 @@ import { role } from "@/app/lib/data";
 import Image from "next/image";
 import Link from "next/link";
 
-export default function TeacherClient({ teacher }) {
+export default function TeacherClients({ teacher }) {
   const attendanceTotal =
     teacher.totalPresentDays?.reduce(
       (sum, m) => sum + (m.days || 0),
