@@ -5,7 +5,6 @@ import TeacherClient from "./TeacherClient";
 export default async function SingleTeacherPage({ params }) {
   const { id } = params;
 
-
   await connectDb();
 
   const teacher = await Teacher.findById(id)
@@ -14,10 +13,12 @@ export default async function SingleTeacherPage({ params }) {
     .lean();
 
   if (!teacher) {
-    return <div className="p-4 text-red-500">Teacher not found</div>;
+    return (
+      <div className="p-4 text-red-500 text-center">
+        Teacher not found
+      </div>
+    );
   }
 
-  return (
-    <TeacherClient teacher={JSON.parse(JSON.stringify(teacher))}  />
-  );
+  return <TeacherClient teacher={teacher} />;
 }
