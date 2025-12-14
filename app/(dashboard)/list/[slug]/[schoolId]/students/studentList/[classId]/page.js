@@ -28,6 +28,7 @@ export default async function StudentListPage({ params }) {
       students={serializableStudents}
       schoolId={schoolId}
       classId={classId}
+      slug={slug}
     />
   );
 }
