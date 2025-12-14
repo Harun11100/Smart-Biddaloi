@@ -14,10 +14,6 @@ const SubjectSchema = new mongoose.Schema(
       uppercase: true,
       trim: true,
     },
-    description: {
-      type: String,
-      default: "",
-    },
     schoolId: {
       type: String,
       required: true,

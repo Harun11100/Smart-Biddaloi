@@ -11,24 +11,6 @@ import Table from "@/app/components/Table";
 import TableSearch from "@/app/components/TableSearch";
 // import Pagination from "@/app/components/Pagination";
 
-type Teacher = {
-  _id: string;
-  classTeacher?: string;
-  name: string;
-  email?: string;
-  phone: string;
-  role: string;
-  subjects: string[];
-  totalPresentDays?: { month: string; year: string; days: number }[];
-  schoolId: string;
-  expoToken?: string | null;
-  loginOTP?: string | null;
-  loginOTPExpiry?: string | null;
-  address?: string;
-  photo?: string;
-  classes?: string[];
-};
-
 const columns = [
   { header: "Info", accessor: "info" },
   { header: "Teacher ID", accessor: "teacherId", className: "hidden md:table-cell" },
@@ -43,17 +25,15 @@ const TeacherListPage = () => {
   const params = useParams();
   const router = useRouter();
 
-  // Slug for routes
   const slug = Array.isArray(params?.slug) ? params.slug[0] : params?.slug ?? "";
 
-  const [schoolDetails, setSchoolDetails] = useState<{ schoolId: string } | null>(null);
+  const [schoolDetails, setSchoolDetails] = useState(null);
   const schoolId = schoolDetails?.schoolId ?? "";
 
-  const [teacherData, setTeacherData] = useState<Teacher[]>([]);
+  const [teacherData, setTeacherData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loadingDelete, setLoadingDelete] = useState<string | null>(null);
+  const [loadingDelete, setLoadingDelete] = useState(null);
 
-  // Load school details from localStorage
   useEffect(() => {
     const stored = localStorage.getItem("schoolDetails");
     if (stored) {
@@ -68,7 +48,6 @@ const TeacherListPage = () => {
     }
   }, [router]);
 
-  // Fetch teacher data
   const fetchTeacherData = async () => {
     if (!schoolId) return;
     try {
@@ -85,15 +64,14 @@ const TeacherListPage = () => {
     fetchTeacherData();
   }, [schoolId]);
 
-  // Delete teacher
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id) => {
     if (!confirm("আপনি কি এই শিক্ষককে মুছে ফেলতে চান?")) return;
 
     setLoadingDelete(id);
     try {
       const res = await axios.delete(`/api/school/deleteTeacher/${id}`);
       if (res.data.success) {
-        setTeacherData((prev) => prev.filter((t) => t._id !== id));
+        setTeacherData(prev => prev.filter(t => t._id !== id));
       } else {
         alert(res.data.message || "মুছে ফেলা ব্যর্থ হয়েছে");
       }
@@ -105,8 +83,7 @@ const TeacherListPage = () => {
     }
   };
 
-  // Render a table row
-  const renderRow = (item: Teacher) => (
+  const renderRow = (item) => (
     <tr key={item._id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight">
       <td className="flex items-center gap-4 p-4">
         {item.photo && (
@@ -117,7 +94,6 @@ const TeacherListPage = () => {
           <p className="text-xs text-gray-500">{item.email}</p>
         </div>
       </td>
-      {/* <td className="hidden md:table-cell">{item.nid||""}</td> */}
       <td className="hidden md:table-cell">{item.subjects.join(", ")}</td>
       <td className="hidden md:table-cell">{item.classes?.join(", ")}</td>
       <td className="hidden lg:table-cell">{item.phone}</td>
@@ -136,43 +112,32 @@ const TeacherListPage = () => {
           >
             {loadingDelete === item._id ? "..." : <Image src="/delete.png" alt="Delete" width={16} height={16} />}
           </button>
-          {/* <FormModal table="teacher" type="delete" id={item._id} /> */}
         </div>
       </td>
     </tr>
   );
 
   return (
-    
-      <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
-        {/* TOP */}
-        <div className="flex items-center justify-between">
-          <h1 className="hidden md:block text-lg font-semibold">All Teachers</h1>
-          <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-            <TableSearch />
-            <div className="flex items-center gap-4 self-end">
-              <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-                <Image src="/filter.png" alt="Filter" width={14} height={14} />
-              </button>
-              <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-                <Image src="/sort.png" alt="Sort" width={14} height={14} />
-              </button>
-              <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow" 
-              >
-                <Image src="/plus.png" alt="Add" width={14} height={14} />
-              </button>
-              <FormModal   schoolId={schoolId} table="teacher" type="create"/>
-            </div>
+    <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
+      <div className="flex items-center justify-between">
+        <h1 className="hidden md:block text-lg font-semibold">All Teachers</h1>
+        <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+          <TableSearch />
+          <div className="flex items-center gap-4 self-end">
+            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
+              <Image src="/filter.png" alt="Filter" width={14} height={14} />
+            </button>
+            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
+              <Image src="/sort.png" alt="Sort" width={14} height={14} />
+            </button>
+            <FormModal schoolId={schoolId} table="teacher" type="create"/>
           </div>
         </div>
-
-        {/* LIST */}
-        <Table columns={columns} renderRow={renderRow} data={teacherData} />
-
-        {/* PAGINATION */}
-        {/* <Pagination /> */}
       </div>
-    
+
+      <Table columns={columns} renderRow={renderRow} data={teacherData} />
+      {/* <Pagination /> */}
+    </div>
   );
 };
 

@@ -1,42 +1,29 @@
-'use client';
+"use client";
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-const TeacherForm = dynamic(() => import("./forms/TeacherForm"), {
-  loading: () => <h1>Loading...</h1>,
-});
-const StudentForm = dynamic(() => import("./forms/StudentForm"), {
-  loading: () => <h1>Loading...</h1>,
-});
+const StudentUpdateForm = dynamic(
+  () => import("./forms/StudentUpdateForm"),
+  { loading: () => <p>Loading...</p> }
+);
 
-interface FormModalProps {
-  schoolId: string;
-  onSuccess?: () => void;
-  table: "teacher" | "student" | "class" | "subject";
- 
-  type: "create" | "update" | "delete";
-
-}
-
-const FormModal = ({ table, schoolId, onSuccess ,type}: FormModalProps) => {
+const FormUpdateModal = ({ schoolId, studentId, data, onSuccess }) => {
   const [open, setOpen] = useState(false);
 
-  // Disable body scroll when modal is open
   useEffect(() => {
-    if (open) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "auto";
+    document.body.style.overflow = open ? "hidden" : "auto";
   }, [open]);
 
   return (
     <>
       <button
-        className="w-10 h-10 flex items-center justify-center rounded-full bg-lamaYellow hover:scale-105 transition-transform shadow-md"
+        className="w-10 h-10 flex items-center justify-center rounded-full bg-lamaYellow hover:scale-105 transition shadow-md"
         onClick={() => setOpen(true)}
       >
-        <Image src="/create.png" alt="Create" width={18} height={18} />
+        <Image src="/create.png" alt="Open" width={18} height={18} />
       </button>
 
       <AnimatePresence>
@@ -60,18 +47,23 @@ const FormModal = ({ table, schoolId, onSuccess ,type}: FormModalProps) => {
               className="fixed inset-0 z-50 flex items-center justify-center p-4"
             >
               <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl p-6 relative">
-                <div
-                  className="absolute top-4 right-4 cursor-pointer hover:scale-110 transition-transform"
+                <button
                   onClick={() => setOpen(false)}
+                  className="absolute top-4 right-4 hover:scale-110 transition"
                 >
                   <Image src="/close.png" alt="Close" width={16} height={16} />
-                </div>
+                </button>
 
-                {table === "teacher" && (
-                  <TeacherForm type="create" schoolId={schoolId} onSubmit={onSuccess} />
-                )}
-                {table === "student" && (
-                  <StudentForm type="create" schoolId={schoolId} onSubmit={onSuccess} />
+                {data && (
+                  <StudentUpdateForm
+                    schoolId={schoolId}
+                    studentId={studentId}
+                    studentData={data}
+                    onSuccess={() => {
+                      setOpen(false);
+                      onSuccess?.();
+                    }}
+                  />
                 )}
               </div>
             </motion.div>
@@ -82,4 +74,4 @@ const FormModal = ({ table, schoolId, onSuccess ,type}: FormModalProps) => {
   );
 };
 
-export default FormModal;
+export default FormUpdateModal;

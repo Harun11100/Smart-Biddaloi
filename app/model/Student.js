@@ -16,7 +16,7 @@ const StudentSchema = new mongoose.Schema(
     coachingFee: { type: Number, required: true },
     paymentStatus: {
       type: String,
-      enum: ["paid", "unpaid", "partial"],
+      enum: ["paid", "unpaid"],
       default: "unpaid",
     },
     totalMonthlyFees: { type: Number, required: true, default: 0 },
