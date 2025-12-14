@@ -2,12 +2,7 @@ import connectDb from "@/app/utils/db";
 import Class from "@/app/model/Class";
 import ClassListClient from "./ClassListClient";
 
-type Params = {
-  slug: string;
-  schoolId: string;
-};
-
-export default async function ClassListPage({ params }: { params: Params }) {
+export default async function ClassListPage({ params }) {
   const { slug, schoolId } = params;
 
   if (!slug || !schoolId) {
@@ -20,7 +15,7 @@ export default async function ClassListPage({ params }: { params: Params }) {
     .select("_id className sectionName studentCount schoolId")
     .lean();
 
-  const serializableClasses = classes.map((cls: any) => ({
+  const serializableClasses = classes.map((cls) => ({
     _id: cls._id.toString(),
     className: cls.className,
     sectionName: cls.sectionName || "",

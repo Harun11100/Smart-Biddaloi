@@ -7,22 +7,7 @@ import FormModal from "@/app/components/FormModal";
 import Table from "@/app/components/Table";
 import TableSearch from "@/app/components/TableSearch";
 import Pagination from "@/app/components/Pagination";
-import { TrashIcon, EyeIcon, PlusIcon } from "@heroicons/react/24/solid"; // Use heroicons or any icon library
-
-type Student = {
-  _id: string;
-  name: string;
-  roll: string;
-  className: string;
-  section?: string;
-  classId: string;
-};
-
-interface Props {
-  students: Student[];
-  schoolId: string;
-  classId: string;
-}
+import { TrashIcon, EyeIcon, PlusIcon } from "@heroicons/react/24/solid";
 
 const columns = [
   { header: "Name", accessor: "name" },
@@ -32,19 +17,25 @@ const columns = [
   { header: "Actions", accessor: "action" },
 ];
 
-export default function StudentListClient({ students, schoolId, classId }: Props) {
+export default function StudentListClient({ students, schoolId, classId }) {
   const [studentData, setStudentData] = useState(students);
-  const [loadingDelete, setLoadingDelete] = useState<string | null>(null);
+  const [loadingDelete, setLoadingDelete] = useState(null);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this student?")) return;
 
     setLoadingDelete(id);
     try {
-      const res = await fetch(`/api/school/deleteStudent/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/school/deleteStudent/${id}`, {
+        method: "DELETE",
+      });
       const data = await res.json();
-      if (data.success) setStudentData((prev) => prev.filter((s) => s._id !== id));
-      else alert(data.message || "Delete failed");
+
+      if (data.success) {
+        setStudentData((prev) => prev.filter((s) => s._id !== id));
+      } else {
+        alert(data.message || "Delete failed");
+      }
     } catch (err) {
       console.error(err);
       alert("Something went wrong while deleting");
@@ -53,8 +44,11 @@ export default function StudentListClient({ students, schoolId, classId }: Props
     }
   };
 
-  const renderRow = (item: Student) => (
-    <tr key={item._id} className="border-b border-gray-200 hover:bg-gray-50 text-sm rounded-lg">
+  const renderRow = (item) => (
+    <tr
+      key={item._id}
+      className="border-b border-gray-200 hover:bg-gray-50 text-sm rounded-lg"
+    >
       <td className="py-3 px-4 font-medium text-gray-800">{item.name}</td>
       <td className="py-3 px-4 text-gray-600">{item.roll}</td>
       <td className="py-3 px-4 text-gray-600">{item.className}</td>
@@ -66,15 +60,19 @@ export default function StudentListClient({ students, schoolId, classId }: Props
               <EyeIcon className="w-4 h-4" />
             </button>
           </Link>
+
           <button
             onClick={() => handleDelete(item._id)}
             disabled={loadingDelete === item._id}
             className={`flex items-center justify-center w-8 h-8 rounded-full transition text-white ${
-              loadingDelete === item._id ? "bg-gray-400" : "bg-red-500 hover:bg-red-600"
+              loadingDelete === item._id
+                ? "bg-gray-400"
+                : "bg-red-500 hover:bg-red-600"
             }`}
           >
             {loadingDelete === item._id ? "..." : <TrashIcon className="w-4 h-4" />}
           </button>
+
           <FormModal table="student" type="delete" id={item._id} />
         </div>
       </td>
@@ -83,14 +81,14 @@ export default function StudentListClient({ students, schoolId, classId }: Props
 
   return (
     <div className="p-6 bg-white rounded-xl shadow-md">
-      {/* Header with Search & Add */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
         <TableSearch />
         <div className="flex items-center gap-3">
-          <FormModal schoolId={schoolId} table="student" type="create"/>
-           <button className="flex items-center gap-2 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition">
-              <PlusIcon className="w-4 h-4" /> Add Student
-            </button>
+          <FormModal schoolId={schoolId} table="student" type="create" />
+          <button className="flex items-center gap-2 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition">
+            <PlusIcon className="w-4 h-4" /> Add Student
+          </button>
         </div>
       </div>
 

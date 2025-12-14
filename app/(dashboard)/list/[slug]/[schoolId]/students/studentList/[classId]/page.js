@@ -2,15 +2,7 @@ import connectDb from "@/app/utils/db";
 import Student from "@/app/model/Student";
 import StudentListClient from "./StudentListClient";
 
-interface PageProps {
-  params: {
-    slug: string;
-    schoolId: string;
-    classId: string;
-  };
-}
-
-export default async function StudentListPage({ params }: PageProps) {
+export default async function StudentListPage({ params }) {
   const { slug, schoolId, classId } = params;
 
   if (!slug || !schoolId) {
@@ -32,6 +24,10 @@ export default async function StudentListPage({ params }: PageProps) {
   }));
 
   return (
-    <StudentListClient students={serializableStudents} schoolId={schoolId} classId={classId}/>
+    <StudentListClient
+      students={serializableStudents}
+      schoolId={schoolId}
+      classId={classId}
+    />
   );
 }

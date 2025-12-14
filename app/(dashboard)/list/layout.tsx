@@ -68,7 +68,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       {/* MAIN CONTENT */}
       <main className="flex-1 flex flex-col overflow-y-auto">
-        <Navbar schoolData={schoolData} />
+        <Navbar />
         <div className="px-4 py-4 sm:px-6 sm:py-6 md:px-10 md:py-8">{children}</div>
       </main>
     </div>

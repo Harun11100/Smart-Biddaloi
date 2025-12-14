@@ -16,9 +16,12 @@ interface FormModalProps {
   schoolId: string;
   onSuccess?: () => void;
   table: "teacher" | "student" | "class" | "subject";
+ 
+  type: "create" | "update" | "delete";
+
 }
 
-const FormModal = ({ table, schoolId, onSuccess }: FormModalProps) => {
+const FormModal = ({ table, schoolId, onSuccess ,type}: FormModalProps) => {
   const [open, setOpen] = useState(false);
 
   // Disable body scroll when modal is open

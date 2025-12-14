@@ -8,14 +8,10 @@ import { role } from "@/app/lib/data";
 import Image from "next/image";
 import Link from "next/link";
 
-interface TeacherClientProps {
-  teacher: any;
-}
-
-export default function TeacherClient({ teacher }: TeacherClientProps) {
+export default function TeacherClient({ teacher }) {
   const attendanceTotal =
     teacher.totalPresentDays?.reduce(
-      (sum: number, m: any) => sum + (m.days || 0),
+      (sum, m) => sum + (m.days || 0),
       0
     ) || 0;
 
@@ -38,12 +34,16 @@ export default function TeacherClient({ teacher }: TeacherClientProps) {
             </div>
             <div className="w-2/3 flex flex-col gap-4 justify-between">
               <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-gray-800">{teacher.name}</h1>
+                <h1 className="text-2xl font-bold text-gray-800">
+                  {teacher.name}
+                </h1>
                 {role === "admin" && (
                   <FormModal table="teacher" type="update" data={teacher} />
                 )}
               </div>
-              <p className="text-gray-500">{teacher.address || "No address provided"}</p>
+              <p className="text-gray-500">
+                {teacher.address || "No address provided"}
+              </p>
               <div className="flex flex-wrap gap-4 text-sm font-medium text-gray-600">
                 <Info icon="/mail.png" value={teacher.email} />
                 <Info icon="/phone.png" value={teacher.phone} />
@@ -84,7 +84,9 @@ export default function TeacherClient({ teacher }: TeacherClientProps) {
 
         {/* CALENDAR */}
         <div className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-shadow duration-300 h-[800px]">
-          <h1 className="text-xl font-semibold text-gray-800 mb-4">Teacher&apos;s Schedule</h1>
+          <h1 className="text-xl font-semibold text-gray-800 mb-4">
+            Teacher&apos;s Schedule
+          </h1>
           <BigCalendar />
         </div>
       </div>
@@ -99,14 +101,14 @@ export default function TeacherClient({ teacher }: TeacherClientProps) {
   );
 }
 
-const Info = ({ icon, value }: { icon: string; value: string }) => (
+const Info = ({ icon, value }) => (
   <div className="flex items-center gap-2 text-gray-700">
     <Image src={icon} alt="" width={16} height={16} className="w-4 h-4" />
     <span>{value || "N/A"}</span>
   </div>
 );
 
-const StatsCard = ({ icon, title, value, color }: any) => (
+const StatsCard = ({ icon, title, value, color }) => (
   <div
     className={`flex gap-4 p-4 rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 ${color}`}
   >
@@ -118,7 +120,7 @@ const StatsCard = ({ icon, title, value, color }: any) => (
   </div>
 );
 
-const Shortcuts = ({ teacherId }: { teacherId: string }) => (
+const Shortcuts = ({ teacherId }) => (
   <div className="bg-white p-4 rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300">
     <h1 className="text-xl font-semibold mb-4 text-gray-800">Shortcuts</h1>
     <div className="flex flex-wrap gap-3">

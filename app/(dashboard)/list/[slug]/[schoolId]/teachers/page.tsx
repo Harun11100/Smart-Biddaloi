@@ -117,7 +117,7 @@ const TeacherListPage = () => {
           <p className="text-xs text-gray-500">{item.email}</p>
         </div>
       </td>
-      <td className="hidden md:table-cell">{item.nid||""}</td>
+      {/* <td className="hidden md:table-cell">{item.nid||""}</td> */}
       <td className="hidden md:table-cell">{item.subjects.join(", ")}</td>
       <td className="hidden md:table-cell">{item.classes?.join(", ")}</td>
       <td className="hidden lg:table-cell">{item.phone}</td>
@@ -136,7 +136,7 @@ const TeacherListPage = () => {
           >
             {loadingDelete === item._id ? "..." : <Image src="/delete.png" alt="Delete" width={16} height={16} />}
           </button>
-          <FormModal table="teacher" type="delete" id={item._id} />
+          {/* <FormModal table="teacher" type="delete" id={item._id} /> */}
         </div>
       </td>
     </tr>
