@@ -2,84 +2,82 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useState } from "react";
-import axios from "axios";
+import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 const TeacherForm = dynamic(() => import("./forms/TeacherForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const StudentForm = dynamic(() => import("./forms/StudentForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 
 interface FormModalProps {
   schoolId: string;
   onSuccess?: () => void;
+  table: "teacher" | "student" | "class" | "subject";
+ 
+  type: "create" | "update" | "delete";
+
 }
 
-const FormModal = ({ schoolId, onSuccess }: FormModalProps) => {
+const FormModal = ({ table, schoolId, onSuccess ,type}: FormModalProps) => {
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (values: any, resetForm: () => void) => {
-    setLoading(true);
-    try {
-      // Ensure required fields exist
-      const payload = {
-        name: values.name,
-        userName: values.userName || "",
-        email: values.email,
-        password: values.password,
-        phone: values.phone,
-        role: values.role,
-        schoolId,
-        classTeacher: values.classTeacher || "",
-        subjects: values.subjects?.split(",").map((s: string) => s.trim()) || [],
-        gender: values.gender || "male",
-        address: values.address || "",
-        bloodGroup: values.bloodGroup || "",
-        nid: values.nid || "",
-      };
-
-      console.log("Submitting payload:", payload)
-
-      const res = await axios.post("/api/school/createTeacher", payload);
-
-      if (res.data.success) {
-        alert("শিক্ষক সফলভাবে যুক্ত হয়েছে");
-        resetForm();
-        setOpen(false);
-        if (onSuccess) onSuccess();
-      } else {
-        alert(res.data.message || "শিক্ষক যুক্ত করতে সমস্যা হয়েছে");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("কিছু সমস্যা হয়েছে, পুনরায় চেষ্টা করুন");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Disable body scroll when modal is open
+  useEffect(() => {
+    if (open) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "auto";
+  }, [open]);
 
   return (
     <>
       <button
-        className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow"
+        className="w-10 h-10 flex items-center justify-center rounded-full bg-lamaYellow hover:scale-105 transition-transform shadow-md"
         onClick={() => setOpen(true)}
       >
-        <Image src="/create.png" alt="Create" width={16} height={16} />
+        <Image src="/create.png" alt="Create" width={18} height={18} />
       </button>
 
-      {open && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center">
-          <div className="bg-white p-4 rounded-md relative w-[90%] md:w-[70%] lg:w-[60%] xl:w-[50%] 2xl:w-[40%]">
-            <TeacherForm type="create" onSubmit={handleSubmit} loading={loading} />
-            <div
-              className="absolute top-4 right-4 cursor-pointer"
+      <AnimatePresence>
+        {open && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.6 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black z-40"
               onClick={() => setOpen(false)}
+            />
+
+            {/* Modal */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
             >
-              <Image src="/close.png" alt="Close" width={14} height={14} />
-            </div>
-          </div>
-        </div>
-      )}
+              <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl p-6 relative">
+                <div
+                  className="absolute top-4 right-4 cursor-pointer hover:scale-110 transition-transform"
+                  onClick={() => setOpen(false)}
+                >
+                  <Image src="/close.png" alt="Close" width={16} height={16} />
+                </div>
+
+                {table === "teacher" && (
+                  <TeacherForm type="create" schoolId={schoolId} onSubmit={onSuccess} />
+                )}
+                {table === "student" && (
+                  <StudentForm type="create" schoolId={schoolId} onSubmit={onSuccess} />
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
 };

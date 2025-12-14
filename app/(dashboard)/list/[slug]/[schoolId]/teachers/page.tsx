@@ -9,8 +9,7 @@ import Link from "next/link";
 import FormModal from "@/app/components/FormModal";
 import Table from "@/app/components/Table";
 import TableSearch from "@/app/components/TableSearch";
-import Pagination from "@/app/components/Pagination";
-import AdminDashboardLayout from "@/app/components/admin/layout/AdminDashboardLayout";
+// import Pagination from "@/app/components/Pagination";
 
 type Teacher = {
   _id: string;
@@ -118,7 +117,7 @@ const TeacherListPage = () => {
           <p className="text-xs text-gray-500">{item.email}</p>
         </div>
       </td>
-      <td className="hidden md:table-cell">{item.nid||""}</td>
+      {/* <td className="hidden md:table-cell">{item.nid||""}</td> */}
       <td className="hidden md:table-cell">{item.subjects.join(", ")}</td>
       <td className="hidden md:table-cell">{item.classes?.join(", ")}</td>
       <td className="hidden lg:table-cell">{item.phone}</td>
@@ -137,7 +136,7 @@ const TeacherListPage = () => {
           >
             {loadingDelete === item._id ? "..." : <Image src="/delete.png" alt="Delete" width={16} height={16} />}
           </button>
-          <FormModal table="teacher" type="delete" id={item._id} />
+          {/* <FormModal table="teacher" type="delete" id={item._id} /> */}
         </div>
       </td>
     </tr>
@@ -162,7 +161,7 @@ const TeacherListPage = () => {
               >
                 <Image src="/plus.png" alt="Add" width={14} height={14} />
               </button>
-              <FormModal   schoolId={schoolId} />
+              <FormModal   schoolId={schoolId} table="teacher" type="create"/>
             </div>
           </div>
         </div>
@@ -171,7 +170,7 @@ const TeacherListPage = () => {
         <Table columns={columns} renderRow={renderRow} data={teacherData} />
 
         {/* PAGINATION */}
-        <Pagination />
+        {/* <Pagination /> */}
       </div>
     
   );

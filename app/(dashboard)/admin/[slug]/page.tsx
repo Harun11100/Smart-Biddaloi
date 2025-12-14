@@ -142,7 +142,7 @@ export default function AdminPage() {
   ];
 
   return (
-    <AdminDashboardLayout slug={slug} >
+    <AdminDashboardLayout slug={slug}>
     <div className="p-4 md:p-6 lg:p-8 bg-gray-50">
       {/* OTP Modal */}
       {otpModal && (

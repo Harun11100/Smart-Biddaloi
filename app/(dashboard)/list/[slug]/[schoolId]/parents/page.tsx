@@ -2,38 +2,37 @@ import FormModal from "@/app/components/FormModal";
 import Pagination from "@/app/components/Pagination";
 import Table from "@/app/components/Table";
 import TableSearch from "@/app/components/TableSearch";
-import {
-  assignmentsData,
-  role,
-} from "@/app/lib/data";
+import { parentsData, role } from "@/app/lib/data";
 import Image from "next/image";
 
-type Assignment = {
+type Parent = {
   id: number;
-  subject: string;
-  class: string;
-  teacher: string;
-  dueDate: string;
+  name: string;
+  email?: string;
+  students: string[];
+  phone: string;
+  address: string;
 };
 
 const columns = [
   {
-    header: "Subject Name",
-    accessor: "name",
+    header: "Info",
+    accessor: "info",
   },
   {
-    header: "Class",
-    accessor: "class",
-  },
-  {
-    header: "Teacher",
-    accessor: "teacher",
+    header: "Student Names",
+    accessor: "students",
     className: "hidden md:table-cell",
   },
   {
-    header: "Due Date",
-    accessor: "dueDate",
-    className: "hidden md:table-cell",
+    header: "Phone",
+    accessor: "phone",
+    className: "hidden lg:table-cell",
+  },
+  {
+    header: "Address",
+    accessor: "address",
+    className: "hidden lg:table-cell",
   },
   {
     header: "Actions",
@@ -41,24 +40,29 @@ const columns = [
   },
 ];
 
-const AssignmentListPage = () => {
-  const renderRow = (item: Assignment) => (
+const ParentListPage = () => {
+  const renderRow = (item: Parent) => (
     <tr
       key={item.id}
       className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
     >
-      <td className="flex items-center gap-4 p-4">{item.subject}</td>
-      <td>{item.class}</td>
-      <td className="hidden md:table-cell">{item.teacher}</td>
-      <td className="hidden md:table-cell">{item.dueDate}</td>
+      <td className="flex items-center gap-4 p-4">
+        <div className="flex flex-col">
+          <h3 className="font-semibold">{item.name}</h3>
+          <p className="text-xs text-gray-500">{item?.email}</p>
+        </div>
+      </td>
+      <td className="hidden md:table-cell">{item.students.join(",")}</td>
+      <td className="hidden md:table-cell">{item.phone}</td>
+      <td className="hidden md:table-cell">{item.address}</td>
       <td>
         <div className="flex items-center gap-2">
-          {role === "admin" || role === "teacher" && (
+          {/* {role === "admin" && (
             <>
-              <FormModal table="assignment" type="update" data={item} />
-              <FormModal table="assignment" type="delete" id={item.id} />
+              <FormModal table="parent" type="update" data={item} />
+              <FormModal table="parent" type="delete" id={item.id} />
             </>
-          )}
+          )} */}
         </div>
       </td>
     </tr>
@@ -68,9 +72,7 @@ const AssignmentListPage = () => {
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
       {/* TOP */}
       <div className="flex items-center justify-between">
-        <h1 className="hidden md:block text-lg font-semibold">
-          All Assignments
-        </h1>
+        <h1 className="hidden md:block text-lg font-semibold">All Parents</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
           <TableSearch />
           <div className="flex items-center gap-4 self-end">
@@ -80,16 +82,18 @@ const AssignmentListPage = () => {
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
-            {role === "admin" || role === "teacher" && <FormModal table="assignment" type="create" />}
+            {/* {role === "admin" && (
+              <FormModal table="teacher" type="create"/>
+            )} */}
           </div>
         </div>
       </div>
       {/* LIST */}
-      <Table columns={columns} renderRow={renderRow} data={assignmentsData} />
+      <Table columns={columns} renderRow={renderRow} data={parentsData} />
       {/* PAGINATION */}
       <Pagination />
     </div>
   );
 };
 
-export default AssignmentListPage;
+export default ParentListPage;
