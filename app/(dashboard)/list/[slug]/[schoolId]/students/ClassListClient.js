@@ -13,7 +13,7 @@ export default function ClassListClient({ classes, slug, schoolId }) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
         <p className="text-gray-400 text-lg font-medium">
-          No classes found for this school.
+          No classes found of this school.
         </p>
       </div>
     );
