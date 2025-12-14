@@ -9,7 +9,7 @@ import Link from "next/link";
 import FormModal from "@/app/components/FormModal";
 import Table from "@/app/components/Table";
 import TableSearch from "@/app/components/TableSearch";
-import Pagination from "@/app/components/Pagination";
+// import Pagination from "@/app/components/Pagination";
 
 type Teacher = {
   _id: string;

@@ -2,14 +2,12 @@ import connectDb from "@/app/utils/db";
 import Class from "@/app/model/Class";
 import ClassListClient from "./ClassListClient";
 
-interface PageProps {
-  params: {
-    slug: string;
-    schoolId: string;
-  };
-}
+type Params = {
+  slug: string;
+  schoolId: string;
+};
 
-export default async function ClassListPage({ params }: PageProps) {
+export default async function ClassListPage({ params }: { params: Params }) {
   const { slug, schoolId } = params;
 
   if (!slug || !schoolId) {
@@ -19,14 +17,16 @@ export default async function ClassListPage({ params }: PageProps) {
   await connectDb();
 
   const classes = await Class.find({ schoolId })
-    .select("_id className sectionName studentCount")
+    .select("_id className sectionName studentCount schoolId")
     .lean();
 
-  // Convert MongoDB ObjectId to string
-  const serializableClasses = classes.map((cls) => ({
-    ...cls,
+  const serializableClasses = classes.map((cls: any) => ({
     _id: cls._id.toString(),
+    className: cls.className,
+    sectionName: cls.sectionName || "",
+    studentCount: cls.studentCount ?? 0,
+    schoolId: cls.schoolId,
   }));
-  
+
   return <ClassListClient classes={serializableClasses} schoolId={schoolId} slug={slug} />;
 }
