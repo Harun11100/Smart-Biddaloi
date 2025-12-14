@@ -7,10 +7,11 @@ import { NextResponse } from "next/server";
 export async function POST(req) {
   try {
     const body = await req.json();
+
     const {
       name,
       roll,
-      className,
+      classId,
       section,
       gender,
       guardianPhone,
@@ -19,24 +20,32 @@ export async function POST(req) {
       coachingFee,
       address,
       schoolId,
-      classId,
+      bloodGroup,
+      remarks,
+      dateOfBirth,
     } = body;
 
     // Required fields
     const requiredFields = [
       "name",
       "roll",
-      "className",
+      "classId",
       "gender",
       "guardianPhone",
       "tuitionFee",
       "coachingFee",
       "address",
       "schoolId",
-      "classId",
     ];
 
-    const missing = requiredFields.filter((field) => !body[field]);
+    // Check missing fields with numeric fields handled
+    const missing = requiredFields.filter((field) => {
+      const value = body[field];
+      if (field === "tuitionFee" || field === "coachingFee") {
+        return value === undefined || value === null;
+      }
+      return !value;
+    });
 
     if (missing.length > 0) {
       return NextResponse.json(
@@ -51,9 +60,8 @@ export async function POST(req) {
 
     await connectDb();
 
-    // Check if student already exists in same class & school
+    // Check if student already exists in the same class & school
     const existing = await Student.findOne({ roll, classId, schoolId });
-
     if (existing) {
       return NextResponse.json(
         { success: false, message: "A student with this roll already exists." },
@@ -61,47 +69,50 @@ export async function POST(req) {
       );
     }
 
-    const totalMonthlyFees = Number(tuitionFee) + Number(coachingFee);
+    const tuition = Number(tuitionFee);
+    const coaching = Number(coachingFee);
+    const totalMonthlyFees = tuition + coaching;
+
+    // Fetch class info
+    const cls = await Class.findById(classId);
+    const className = cls?.className || "";
 
     // Create student
     const newStudent = await Student.create({
       name,
       roll,
       className,
-      section,
+      section: section || "",
       gender,
       guardianPhone,
-      guardianName,
-      tuitionFee,
-      coachingFee,
+      guardianName: guardianName || "",
+      tuitionFee: tuition,
+      coachingFee: coaching,
       totalMonthlyFees,
       address,
       schoolId,
       classId,
+      bloodGroup: bloodGroup || "",
+      remarks: remarks || "",
+      dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+      totalDueAmount: totalMonthlyFees,
+      totalPaidAmount: 0,
+      monthlyAbsent: 0,
     });
 
-    // Update counts concurrently
+    // Update counts
     await Promise.all([
       Class.findByIdAndUpdate(classId, { $inc: { studentCount: 1 } }),
-      School.findByIdAndUpdate(schoolId, { $inc: { totalStudents: 1 } }),
-      School.findByIdAndUpdate(schoolId, { $inc: { totalStudentFees: totalMonthlyFees } })
+      School.findByIdAndUpdate(schoolId, { $inc: { totalStudents: 1, totalStudentFees: totalMonthlyFees } }),
+      gender === "male"
+        ? School.findByIdAndUpdate(schoolId, { $inc: { maleStudents: 1 } })
+        : gender === "female"
+        ? School.findByIdAndUpdate(schoolId, { $inc: { femaleStudents: 1 } })
+        : null,
     ]);
 
-    // Update gender counters
-    const genderField =
-      gender === "male" ? "maleStudents" : gender === "female" ? "femaleStudents" : null;
-
-    if (genderField) {
-      await School.findByIdAndUpdate(schoolId, { $inc: { [genderField]: 1 } });
-     
-    }
-
     return NextResponse.json(
-      {
-        success: true,
-        message: "Student added successfully!",
-        student: newStudent,
-      },
+      { success: true, message: "Student added successfully!", student: newStudent },
       { status: 201 }
     );
   } catch (error) {

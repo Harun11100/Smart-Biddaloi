@@ -6,6 +6,7 @@ import { role } from "@/app/lib/data";
 
 interface MenuProps {
   slug: string;
+  schoolId: string;
 }
 
 interface MenuItem {
@@ -20,7 +21,7 @@ interface MenuSection {
   items: MenuItem[];
 }
 
-const Menu: React.FC<MenuProps> = ({ slug }) => {
+const Menu: React.FC<MenuProps> = ({ slug ,schoolId }) => {
   const menuItems: MenuSection[] = [
     {
       title: "MENU",
@@ -34,67 +35,67 @@ const Menu: React.FC<MenuProps> = ({ slug }) => {
         {
           icon: "/teacher.png",
           label: "Teachers",
-          href: slug ? `/list/${slug}/teachers` : "#",
+          href: slug ? `/list/${slug}/${schoolId}/teachers` : "#",
           visible: ["admin", "teacher"],
         },
         {
           icon: "/student.png",
           label: "Students",
-          href: slug ? `/list/${slug}/students` : "#",
+          href: slug ? `/list/${slug}/${schoolId}/students` : "#",
           visible: ["admin", "teacher"],
         },
         {
           icon: "/subject.png",
           label: "Subjects",
-          href: slug ? `/list/${slug}/subjects` : "#",
+          href: slug ? `/list/${slug}/${schoolId}/subjects` : "#",
           visible: ["admin"],
         },
         {
           icon: "/class.png",
           label: "Classes",
-          href: slug ? `/list/${slug}/classes` : "#",
+          href: slug ? `/list/${slug}/${schoolId}/classes` : "#",
           visible: ["admin", "teacher"],
         },
         {
           icon: "/lesson.png",
           label: "Lessons",
-          href: slug ? `/list/${slug}/lessons` : "#",
+          href: slug ? `/list/${slug}/${schoolId}/lessons` : "#",
           visible: ["admin", "teacher"],
         },
         {
           icon: "/exam.png",
           label: "Exams",
-          href: slug ? `/list/${slug}/exams` : "#",
+          href: slug ? `/list/${slug}/${schoolId}/exams` : "#",
           visible: ["admin", "teacher", "student", "parent"],
         },
         {
           icon: "/assignment.png",
           label: "Assignments",
-          href: slug ? `/list/${slug}/assignments` : "#",
+          href: slug ? `/list/${slug}/${schoolId}/assignments` : "#",
           visible: ["admin", "teacher", "student", "parent"],
         },
         {
           icon: "/result.png",
           label: "Results",
-          href: slug ? `/list/${slug}/results` : "#",
+          href: slug ? `/list/${slug}/${schoolId}/results` : "#",
           visible: ["admin", "teacher", "student", "parent"],
         },
         {
           icon: "/attendance.png",
           label: "Attendance",
-          href: slug ? `/list/${slug}/attendance` : "#",
+          href: slug ? `/list/${slug}/${schoolId}/attendance` : "#",
           visible: ["admin", "teacher", "student", "parent"],
         },
         {
           icon: "/calendar.png",
           label: "Events",
-          href: slug ? `/list/${slug}/events` : "#",
+          href: slug ? `/list/${slug}/${schoolId}/events` : "#",
           visible: ["admin", "teacher", "student", "parent"],
         },
         {
           icon: "/announcement.png",
           label: "Announcements",
-          href: slug ? `/list/${slug}/announcements` : "#",
+          href: slug ? `/list/${slug}/${schoolId}/announcements` : "#",
           visible: ["admin", "teacher", "student", "parent"],
         },
       ],

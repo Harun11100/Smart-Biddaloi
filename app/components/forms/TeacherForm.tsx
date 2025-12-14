@@ -1,10 +1,10 @@
 'use client';
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
+import axios from "axios";
 import InputField from "../InputField";
-import Image from "next/image";
 
 const schema = z.object({
   name: z.string().min(1, { message: "Name is required!" }),
@@ -26,11 +26,13 @@ type Inputs = z.infer<typeof schema>;
 interface TeacherFormProps {
   type: "create";
   data?: Partial<Inputs>;
-  onSubmit: (values: Inputs, resetForm: () => void) => void;
+  onSubmit?: (values: Inputs, resetForm: () => void) => void;
   loading?: boolean;
+  schoolId: string;
+  onSuccess?: () => void;
 }
 
-const TeacherForm = ({ type, data, onSubmit, loading }: TeacherFormProps) => {
+const TeacherForm = ({ type, data, loading = false, schoolId, onSuccess }: TeacherFormProps) => {
   const {
     register,
     handleSubmit,
@@ -41,10 +43,32 @@ const TeacherForm = ({ type, data, onSubmit, loading }: TeacherFormProps) => {
     defaultValues: data || {},
   });
 
-  const submitHandler = handleSubmit((values) => onSubmit(values, () => reset()));
+  const submitHandler: SubmitHandler<Inputs> = async (values) => {
+    try {
+      const payload = {
+        ...values,
+        schoolId,
+        subjects: values.subjects?.split(",").map((s) => s.trim()) || [],
+        gender: values.gender || "male",
+      };
+
+      const res = await axios.post("/api/school/createTeacher", payload);
+
+      if (res.data.success) {
+        alert("Teacher created successfully!");
+        reset();
+        if (onSuccess) onSuccess();
+      } else {
+        alert(res.data.message || "Failed to create teacher");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong. Please try again.");
+    }
+  };
 
   return (
-    <form className="flex flex-col gap-6" onSubmit={submitHandler}>
+    <form className="flex flex-col gap-6" onSubmit={handleSubmit(submitHandler)}>
       <h1 className="text-xl font-semibold">Create a new teacher</h1>
 
       <span className="text-xs text-gray-400 font-medium">Authentication Information</span>
@@ -64,9 +88,14 @@ const TeacherForm = ({ type, data, onSubmit, loading }: TeacherFormProps) => {
         <InputField label="NID" name="nid" register={register} defaultValue={data?.nid} error={errors.nid} />
         <InputField label="Class Teacher Of" name="classTeacher" register={register} defaultValue={data?.classTeacher} error={errors.classTeacher} />
         <InputField label="Subjects (comma-separated)" name="subjects" register={register} defaultValue={data?.subjects} error={errors.subjects} />
+
         <div className="flex flex-col gap-2 w-full md:w-1/4">
           <label className="text-xs text-gray-500">Gender</label>
-          <select className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full" {...register("gender")} defaultValue={data?.gender || "male"}>
+          <select
+            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+            {...register("gender")}
+            defaultValue={data?.gender || "male"}
+          >
             <option value="male">Male</option>
             <option value="female">Female</option>
           </select>
@@ -74,7 +103,11 @@ const TeacherForm = ({ type, data, onSubmit, loading }: TeacherFormProps) => {
         </div>
       </div>
 
-      <button type="submit" className={`bg-blue-500 text-white p-2 rounded-md ${loading ? "opacity-50 cursor-not-allowed" : ""}`} disabled={loading}>
+      <button
+        type="submit"
+        className={`bg-blue-500 text-white p-2 rounded-md ${loading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-600"}`}
+        disabled={loading}
+      >
         {type === "create" ? "Create Teacher" : "Update Teacher"}
       </button>
     </form>

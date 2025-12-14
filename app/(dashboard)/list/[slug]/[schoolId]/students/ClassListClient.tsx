@@ -1,0 +1,74 @@
+'use client';
+
+import { useRouter } from "next/navigation";
+
+interface ClassData {
+  _id: string;
+  className: string;
+  sectionName?: string;
+  studentCount: number;
+  schoolId: string;
+  guardianPhone?: string | null;
+}
+
+interface ClassListClientProps {
+  classes: ClassData[];
+  schoolId: string;
+  slug: string;
+}
+
+export default function ClassListClient({ classes, slug, schoolId }: ClassListClientProps) {
+  const router = useRouter();
+
+  const handleClassClick = (classId: string) => {
+    router.push(`/list/${slug}/${schoolId}/students/studentList/${classId}`);
+  };
+
+  if (!classes.length) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <p className="text-gray-400 text-lg font-medium">No classes found for this school.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6 sm:p-10">
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 text-center">
+        📚 Select a Class
+      </h1>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {classes.map((cls) => (
+          <div
+            key={cls._id}
+            onClick={() => handleClassClick(cls._id)}
+            className="cursor-pointer rounded-3xl p-6 bg-white shadow-md hover:shadow-2xl border border-gray-100 transition-all duration-300 transform hover:-translate-y-1"
+          >
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-lg sm:text-xl font-semibold text-gray-900">
+                  {cls.className} {cls.sectionName ? `(${cls.sectionName})` : ""}
+                </p>
+                <p className="text-sm sm:text-base text-gray-500 mt-1">
+                  {cls.studentCount} {cls.studentCount === 1 ? "student" : "students"}
+                </p>
+              </div>
+              <div className="flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-tr from-indigo-400 to-purple-500">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
