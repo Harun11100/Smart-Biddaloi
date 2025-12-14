@@ -114,12 +114,13 @@ export default function AdminPage() {
     setVerifying(false);
   };
 
-  if (loading)
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="loader" />
-      </div>
-    );
+if (loading)
+  return (
+    <div className="flex justify-center items-center h-screen bg-gray-50">
+      {/* Modern Spinner */}
+      <div className="w-20 h-20 border-4 border-blue-500 border-t-transparent border-solid rounded-full animate-spin"></div>
+    </div>
+  );
 
   if (!schoolData)
     return (
