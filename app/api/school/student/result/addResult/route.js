@@ -1,6 +1,6 @@
+// app/api/school/student/result/addResult/route.js
 import connectDb from "@/app/utils/db";
-import Result from "@/app/model/Result"; 
-import Subject from "@/app/model/Subject"; 
+import Result from "@/app/model/Result";
 
 // grading scale based on percentage
 const gradingScale = [
@@ -23,18 +23,18 @@ function calculateGrade(mark, maxMarks, passingMarks) {
   return { grade: "F", point: 0.0 };
 }
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ success: false, message: "Method not allowed" });
-  }
-
+// App Router POST handler
+export async function POST(req) {
   try {
     await connectDb();
 
-    const { schoolId, studentId, examType, results } = req.body;
+    const { schoolId, studentId, examType, results } = await req.json();
 
     if (!schoolId || !studentId || !examType || !Array.isArray(results)) {
-      return res.status(400).json({ success: false, message: "Incomplete data" });
+      return new Response(
+        JSON.stringify({ success: false, message: "Incomplete data" }),
+        { status: 400 }
+      );
     }
 
     let totalMarks = 0;
@@ -77,9 +77,15 @@ export default async function handler(req, res) {
 
     await newResult.save();
 
-    return res.status(200).json({ success: true, message: "Result saved successfully" });
+    return new Response(
+      JSON.stringify({ success: true, message: "Result saved successfully" }),
+      { status: 200 }
+    );
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ success: false, message: "Server error" });
+    return new Response(
+      JSON.stringify({ success: false, message: "Server error" }),
+      { status: 500 }
+    );
   }
 }
