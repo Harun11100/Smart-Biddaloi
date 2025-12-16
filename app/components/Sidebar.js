@@ -1,4 +1,4 @@
-// app/admin-dashboard/components/Sidebar.js
+// app/superAdmin-dashboard/components/Sidebar.js
 "use client";
 
 import React from "react";
@@ -13,19 +13,19 @@ const Sidebar = ({ adminId }) => {
       <nav className="flex-1 mt-6">
         <ul>
           <li className="px-6 py-3 hover:bg-indigo-600">
-            <Link href={`/admin/${adminId}/dashboard`}>Home</Link>
+            <Link href={`/superAdmin/${adminId}/dashboard`}>Home</Link>
           </li>
           <li className="px-6 py-3 hover:bg-indigo-600">
-            <Link href={`/admin/${adminId}/dashboard/schoolList`}>Schools</Link>
+            <Link href={`/superAdmin/${adminId}/dashboard/schoolList`}>Schools</Link>
           </li>
            <li className="px-6 py-3 hover:bg-indigo-600">
-            <Link href={`/admin/${adminId}/register-school`}>School Register</Link>
+            <Link href={`/superAdmin/${adminId}/register-school`}>School Register</Link>
           </li>
            <li className="px-6 py-3 hover:bg-indigo-600">
-            <Link href={`/admin/${adminId}/allProducts`}>All Products</Link>
+            <Link href={`/superAdmin/${adminId}/allProducts`}>All Products</Link>
           </li>
            <li className="px-6 py-3 hover:bg-indigo-600">
-            <Link href={`/admin/${adminId}/createProduct`}>Upload Products</Link>
+            <Link href={`/superAdmin/${adminId}/createProduct`}>Upload Products</Link>
           </li>
         </ul>
       </nav>
