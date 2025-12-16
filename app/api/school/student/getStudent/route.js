@@ -13,7 +13,6 @@ export async function GET(req) {
     const classId = searchParams.get("classId");
     const studentId = searchParams.get("studentId");
 
-    // ✅ Validate query params
     if (!schoolId || !classId || !studentId) {
       return NextResponse.json(
         { success: false, message: "schoolId, classId, and studentId are required" },
@@ -21,60 +20,46 @@ export async function GET(req) {
       );
     }
 
-    // ✅ Check if School exists
     const schoolData = await School.findById(schoolId);
     if (!schoolData) {
-      return NextResponse.json(
-        { success: false, message: "School not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, message: "School not found" }, { status: 404 });
     }
 
-    // ✅ Verify Class belongs to School
     const classData = await Class.findOne({ _id: classId, schoolId });
     if (!classData) {
-      return NextResponse.json(
-        { success: false, message: "Class not found in this school" },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, message: "Class not found in this school" }, { status: 404 });
     }
 
-    // ✅ Fetch the Student (scoped by school + class)
     const student = await Student.findOne({ _id: studentId, classId, schoolId });
     if (!student) {
-      return NextResponse.json(
-        { success: false, message: "Student not found in this class" },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, message: "Student not found in this class" }, { status: 404 });
     }
 
-    // ✅ Fetch student's payment history (sorted newest first)
-    const paymentHistory = await PaymentHistory.find({ studentId: student._id })
-      .sort({ createdAt: -1 });
+    const paymentHistory = await PaymentHistory.find({ studentId: student._id }).sort({ createdAt: -1 });
 
-    const studentData={
-      _id:student._id,
-      studentName:student.name,
-      className:student.className,
-      guardianName:student.guardianName ||"",
-      guardianPhone:student.guardianPhone||"",
-      roll:student.roll,
-      section:student.section,
-      tutionFee:student.tuitionFee,
-      coachingFee:student.coachingFee,
-      paymentStatus:student.paymentStatus,
-      address:student.address,
-      totalPaidAmount:student.totalPaidAmount,
-      totalDueAmount:student.totalDueAmount
-    }
+    const studentData = {
+      _id: student._id,
+      name: student.name,
+      studentName: student.name, // for frontend consistency
+      className: student.className,
+      section: student.section || "",
+      roll: student.roll,
+      gender: student.gender || "",
+      guardianName: student.guardianName || "",
+      guardianPhone: student.guardianPhone || "",
+      tuitionFee: student.tuitionFee,
+      coachingFee: student.coachingFee,
+      totalPaidAmount: student.totalPaidAmount,
+      totalDueAmount: student.totalDueAmount,
+      paymentStatus: student.paymentStatus || "unpaid",
+      address: student.address || "",
+      bloodGroup: student.bloodGroup || "",
+      remarks: student.remarks || "",
+      dateOfBirth: student.dateOfBirth || null,
+    };
+
     return NextResponse.json(
-      {
-        success: true,
-        data: {
-          student:studentData,
-          paymentHistory,
-        },
-      },
+      { success: true, data: { student: studentData, paymentHistory } },
       { status: 200 }
     );
   } catch (err) {
