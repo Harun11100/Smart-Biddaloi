@@ -2,12 +2,22 @@ import School from "@/app/model/School";
 import connectDb from "@/app/utils/db";
 import nodemailer from "nodemailer";
 
-// backend/utils/validClientIds.js
- const validClientIds = new Set([
+// Allowed Client IDs
+const validClientIds = new Set([
   "SCH001","SCH002","SCH003","SCH004","SCH005","SCH006","SCH007","SCH008",
   "SCH009","SCH010","SCH011","SCH012","SCH013","SCH014","SCH015","SCH016",
   "SCH017","SCH018"
 ]);
+
+// 🔹 Slug generator (Bangla + English supported)
+function generateSlug(text) {
+  return text
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
 export async function POST(req) {
   try {
@@ -31,16 +41,19 @@ export async function POST(req) {
       terms,
     } = body;
 
-    // Validate required fields
-    if (!schoolName || !principalName || !email || !phone || !union || !district ||
-        !secretName || !password || !wordNo || !clientId) {
+    // ✅ Required fields validation
+    if (
+      !schoolName || !principalName || !email || !phone ||
+      !union || !district || !secretName || !password ||
+      !wordNo || !clientId
+    ) {
       return new Response(
         JSON.stringify({ success: false, message: "সব ফিল্ড পূরণ করুন" }),
         { status: 400 }
       );
     }
 
-    // Validate client ID
+    // ✅ Client ID validation
     if (!validClientIds.has(clientId)) {
       return new Response(
         JSON.stringify({ success: false, message: "অবৈধ Client ID" }),
@@ -48,7 +61,7 @@ export async function POST(req) {
       );
     }
 
-    // Prevent reuse of the same client ID
+    // ✅ Prevent reuse of clientId
     const clientUsed = await School.findOne({ clientId });
     if (clientUsed) {
       return new Response(
@@ -57,7 +70,7 @@ export async function POST(req) {
       );
     }
 
-    // Check if phone or email already exists
+    // ✅ Email / phone uniqueness
     const existing = await School.findOne({ $or: [{ phone }, { email }] });
     if (existing) {
       return new Response(
@@ -69,7 +82,17 @@ export async function POST(req) {
       );
     }
 
-    // Create new principal
+    // ✅ Generate unique slug from school name
+    let baseSlug = generateSlug(schoolName);
+    let slug = baseSlug;
+    let count = 1;
+
+    while (await School.findOne({ slug })) {
+      slug = `${baseSlug}-${count}`;
+      count++;
+    }
+
+    // ✅ Create school
     const school = await School.create({
       schoolName,
       principalName,
@@ -80,6 +103,7 @@ export async function POST(req) {
       clientId,
       union,
       district,
+      slug,
       secretName,
       password,
       logo,
@@ -87,7 +111,7 @@ export async function POST(req) {
       terms,
     });
 
-    // Clean response
+    // ✅ Safe response
     const safeSchool = {
       schoolId: school._id,
       schoolName: school.schoolName,
@@ -100,7 +124,7 @@ export async function POST(req) {
       totalPayment: school.totalPayments,
     };
 
-    // Send registration success email
+    // ✅ Email notification
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -113,10 +137,11 @@ export async function POST(req) {
       from: `"Smart School Manager" <${process.env.GMAIL_USER}>`,
       to: school.email,
       subject: "নিবন্ধন সফল হয়েছে",
-      text: `আপনি সফলভাবে নিবন্ধিত হয়েছেন। আপনার স্কুলের নাম: ${school.schoolName}`,
-      html: `<p>আপনি সফলভাবে নিবন্ধিত হয়েছেন।</p>
-             <p>স্কুলের নাম: <b>${school.schoolName}</b></p>
-             <p>আপনি এখন লগইন করতে পারেন।</p>`,
+      html: `
+        <p>আপনি সফলভাবে নিবন্ধিত হয়েছেন।</p>
+        <p>স্কুলের নাম: <b>${school.schoolName}</b></p>
+        <p>আপনি এখন লগইন করতে পারেন।</p>
+      `,
     });
 
     return new Response(
