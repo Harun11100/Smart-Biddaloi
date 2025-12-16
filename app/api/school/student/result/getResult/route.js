@@ -16,10 +16,45 @@ export async function GET(req) {
     if (schoolId) filter.schoolId = schoolId;
     if (studentId) filter.studentId = studentId;
     if (examType) filter.examType = examType;
-    
+
     const results = await Result.find(filter).sort({ createdAt: -1 });
 
-    return NextResponse.json({ success: true, count: results.length, data: results });
+    // Map results to include GPA, final grade, fail status
+    const resultsWithGPA = results.map((result) => {
+      const subjects = result.results || [];
+
+      const failed = subjects.some((sub) => sub.grade === "F" || sub.mark < sub.passingMarks);
+
+      const gpa = failed
+        ? "F"
+        : (
+            subjects.reduce((acc, sub) => acc + (sub.point || 0), 0) / subjects.length
+          ).toFixed(2);
+
+      const finalGrade = gpa === "F" ? "F" : (() => {
+        const g = Number(gpa);
+        if (g >= 5) return "A+";
+        if (g >= 4) return "A";
+        if (g >= 3.5) return "A-";
+        if (g >= 3) return "B+";
+        if (g >= 2.5) return "B";
+        if (g >= 2) return "C";
+        return "F";
+      })();
+
+      return {
+        ...result._doc,
+        gpa,
+        finalGrade,
+        failed,
+      };
+    });
+
+    return NextResponse.json({
+      success: true,
+      count: resultsWithGPA.length,
+      data: resultsWithGPA,
+    });
   } catch (error) {
     console.error("GET results error:", error);
     return NextResponse.json(
