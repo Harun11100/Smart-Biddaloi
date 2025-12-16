@@ -1,80 +1,85 @@
-import { NextResponse } from "next/server";
 import connectDb from "@/app/utils/db";
-import Result from "@/app/model/Result";
-import Student from "@/app/model/Student";
+import Result from "@/app/model/Result"; 
+import Subject from "@/app/model/Subject"; 
 
-export async function POST(req) {
+// grading scale based on percentage
+const gradingScale = [
+  { min: 80, grade: "A+", point: 5.0 },
+  { min: 70, grade: "A", point: 4.0 },
+  { min: 60, grade: "B+", point: 3.5 },
+  { min: 50, grade: "B", point: 3.0 },
+  { min: 40, grade: "C", point: 2.0 },
+  { min: 33, grade: "D", point: 1.0 },
+  { min: 0, grade: "F", point: 0.0 },
+];
+
+function calculateGrade(mark, maxMarks, passingMarks) {
+  if (mark < passingMarks) return { grade: "F", point: 0.0 };
+  const percentage = (mark / maxMarks) * 100;
+
+  for (let g of gradingScale) {
+    if (percentage >= g.min) return { grade: g.grade, point: g.point };
+  }
+  return { grade: "F", point: 0.0 };
+}
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ success: false, message: "Method not allowed" });
+  }
+
   try {
     await connectDb();
 
-    const body = await req.json();
-    const { schoolId, studentId, examType, results, totalMarks, averageGrade } = body;
+    const { schoolId, studentId, examType, results } = req.body;
 
-    // ✅ Validate input
-    if (!schoolId || !studentId || !examType || !results || results.length === 0) {
-      return NextResponse.json(
-        { success: false, message: "Missing required fields" },
-        { status: 400 }
-      );
+    if (!schoolId || !studentId || !examType || !Array.isArray(results)) {
+      return res.status(400).json({ success: false, message: "Incomplete data" });
     }
 
-    // ✅ Generate current month-year
-    const month = new Date().toLocaleString("default", { month: "long" });
-    const year = new Date().getFullYear();
-    const examDate = `${month} ${year}`; // e.g., "November 2025"
+    let totalMarks = 0;
+    let totalPoints = 0;
+    let totalMaxMarks = 0;
+    const processedResults = [];
 
-    // ✅ Save result to database
-    const newResult = await Result.create({
+    for (const r of results) {
+      const mark = Number(r.mark || 0);
+      const maxMarks = Number(r.maxMarks || 100);
+      const passingMarks = Number(r.passingMarks || 33);
+
+      const { grade, point } = calculateGrade(mark, maxMarks, passingMarks);
+
+      totalMarks += mark;
+      totalMaxMarks += maxMarks;
+      totalPoints += point;
+
+      processedResults.push({
+        subject: r.subject,
+        mark,
+        maxMarks,
+        passingMarks,
+        grade,
+        point,
+      });
+    }
+
+    const gpa = results.length ? (totalPoints / results.length).toFixed(2) : "0.00";
+
+    const newResult = new Result({
       schoolId,
       studentId,
       examType,
-      results,
       totalMarks,
-      averageGrade,
-      examDate, // save month-year
+      totalMaxMarks,
+      gpa,
+      results: processedResults,
     });
 
-    // ✅ Find student with valid expoToken
-    const student = await Student.findOne({
-      _id: studentId,
-      schoolId,
-      expoToken: { $exists: true, $ne: "" },
-    });
+    await newResult.save();
 
-    // ✅ Send notification if token exists
-    if (student && student.expoToken) {
-      try {
-        await fetch("https://exp.host/--/api/v2/push/send", {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            to: student.expoToken,
-            sound: "default",
-            title: "ফলাফল প্রকাশিত হয়েছে 📊",
-            body: `প্রিয় অভিভাবক, ${examType} পরীক্ষার ফলাফল প্রকাশিত হয়েছে। অনুগ্রহ করে বিস্তারিত জানতে অ্যাপে প্রবেশ করুন। 📱`,
-            data: {
-              studentId: student._id.toString(),
-              guardianPhone: student.guardianPhone || null,
-            },
-          }),
-        });
-      } catch (pushErr) {
-        console.warn("⚠️ Push notification failed:", pushErr);
-      }
-    }
-
-    return NextResponse.json(
-      { success: true, message: "Result uploaded successfully", result: newResult },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error("❌ Result upload error:", error);
-    return NextResponse.json(
-      { success: false, message: error.message || "Internal Server Error" },
-      { status: 500 }
-    );
+    return res.status(200).json({ success: true, message: "Result saved successfully" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 }
