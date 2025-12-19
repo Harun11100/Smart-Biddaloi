@@ -1,30 +1,24 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
-import { IoAddCircleOutline, IoSchoolOutline, IoTrashOutline } from "react-icons/io5";
+import {
+  IoAddCircleOutline,
+  IoSchoolOutline,
+  IoTrashOutline,
+} from "react-icons/io5";
 
 const availableClasses = [
-  "Play",
-  "Nursery",
-  "Class One",
-  "Class Two",
-  "Class Three",
-  "Class Four",
-  "Class Five",
-  "Class Six",
-  "Class Seven",
-  "Class Eight",
-  "Class Nine",
-  "Class Ten",
+  "প্লে-শ্রেণী","নার্সারি-শ্রেণী","প্রথম শ্রেণী","দ্বিতীয় শ্রেণী",
+  "তৃতীয় শ্রেণী","চতুর্থ শ্রেণী","পঞ্চম শ্রেণী","ষষ্ঠ শ্রেণী",
+  "সপ্তম শ্রেণী","অষ্টম শ্রেণী","নবম শ্রেণী","দশম শ্রেণী",
 ];
 
 const availableSections = ["A", "B", "C"];
 
 export default function ClassList() {
   const params = useSearchParams();
-  const slug = params.get("slug") || "";
   const router = useRouter();
 
   const [schoolDetails, setSchoolDetails] = useState(null);
@@ -35,201 +29,239 @@ export default function ClassList() {
   const [loadingDelete, setLoadingDelete] = useState(null);
   const [initialLoad, setInitialLoad] = useState(true);
 
-  const STORAGE_KEY = schoolDetails ? `classes_${schoolDetails.schoolId}` : "";
+  const STORAGE_KEY = schoolDetails
+    ? `classes_${schoolDetails.schoolId}`
+    : "";
 
-  // Load school details
+  /* ---------- AUTH CHECK ---------- */
   useEffect(() => {
     const stored = localStorage.getItem("schoolDetails");
-    if (stored) {
-      const school = JSON.parse(stored);
-      if (!school.schoolId) {
-        router.push("/sign-in-as-admin");
-        return;
-      }
-      setSchoolDetails(school);
-    } else {
-      router.push("/sign-in-as-admin");
-    }
+    if (!stored) return router.push("/sign-in-as-admin");
+
+    const school = JSON.parse(stored);
+    if (!school.schoolId) return router.push("/sign-in-as-admin");
+
+    setSchoolDetails(school);
   }, [router]);
 
-  const fetchClassesFromDb = async () => {
+  /* ---------- FETCH ---------- */
+  const fetchClasses = async () => {
     if (!schoolDetails) return;
-    try {
-      const res = await axios.get(`/api/school/class/getClass?schoolId=${schoolDetails.schoolId}`);
-      const fetched = res.data.data || [];
-      setClasses(fetched);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(fetched));
-    } catch (err) {
-      console.error("Error fetching classes:", err);
-      alert("Failed to fetch classes.");
-    }
-  };
-
-  const loadClassesFromStorage = () => {
-    if (!STORAGE_KEY) return;
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      setClasses(JSON.parse(stored));
-    } else {
-      fetchClassesFromDb();
-    }
-    setInitialLoad(false);
+    const res = await axios.get(
+      `/api/school/class/getClass?schoolId=${schoolDetails.schoolId}`
+    );
+    const data = res.data.data || [];
+    setClasses(data);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   };
 
   useEffect(() => {
-    if (schoolDetails) loadClassesFromStorage();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!schoolDetails) return;
+    const stored = localStorage.getItem(STORAGE_KEY);
+    stored ? setClasses(JSON.parse(stored)) : fetchClasses();
+    setInitialLoad(false);
   }, [schoolDetails]);
 
+  /* ---------- TOGGLE SECTION ---------- */
+  const toggleSection = (section) => {
+    setSelectedSection((prev) => (prev === section ? "" : section));
+  };
+
+  /* ---------- ADD CLASS ---------- */
   const addClass = async () => {
-    if (!selectedClass) return alert("Please select a class");
-    if (!schoolDetails) return;
+    if (!selectedClass) {
+      return alert("Please select a class");
+    }
 
     setLoading(true);
     try {
-      const res = await axios.post(`/api/school/class/addClass`, {
+      const res = await axios.post("/api/school/class/addClass", {
         schoolId: schoolDetails.schoolId,
         className: selectedClass,
-        sectionName: selectedSection,
+        sectionName: selectedSection || undefined,
       });
 
       if (res.data.success) {
         setSelectedClass("");
         setSelectedSection("");
-        await fetchClassesFromDb();
-        alert("Class added successfully!");
+        fetchClasses();
       } else {
         alert(res.data.message);
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       alert("Failed to add class");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete?")) deleteClass(id);
-  };
-
-  const deleteClass = async (classId) => {
-    if (!schoolDetails) return;
+  /* ---------- DELETE ---------- */
+  const deleteClass = async (id) => {
+    if (!confirm("Are you sure you want to delete this class?")) return;
 
     const prev = [...classes];
-    const updated = prev.filter((n) => n._id !== classId);
-
-    setClasses(updated);
-    setLoadingDelete(classId);
+    setClasses(prev.filter((c) => c._id !== id));
+    setLoadingDelete(id);
 
     try {
-      const res = await fetch(`/api/school/class/deleteClass?classId=${classId}`, { method: "DELETE" });
+      const res = await fetch(
+        `/api/school/class/deleteClass?classId=${id}`,
+        { method: "DELETE" }
+      );
       const data = await res.json();
-
-      if (!data.success) {
-        setClasses(prev);
-        alert("Failed to delete.");
-      } else {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      }
-    } catch (err) {
-      console.error(err);
+      if (!data.success) setClasses(prev);
+    } catch {
       setClasses(prev);
-      alert("Failed to delete.");
     } finally {
       setLoadingDelete(null);
     }
   };
 
   if (!schoolDetails) {
-    return <p className="p-4 text-center text-gray-500">Loading school details...</p>;
+    return <p className="text-center p-6 text-gray-500">Loading...</p>;
   }
 
   return (
-    <div className="p-4 md:p-8 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen pb-40">
-      <h1 className="text-center text-2xl md:text-3xl font-extrabold text-blue-800 tracking-wide mb-8">
-        Class Management
-      </h1>
+    <div className="min-h-screen  from-slate-100 to-blue-50 p-4 md:p-8">
+      <div className="max-w-5xl mx-auto bg-white/70 backdrop-blur-xl rounded-3xl shadow-xl border p-6 border-gray-100 md:p-10">
 
-      {/* CLASS SELECT */}
-      <p className="font-semibold text-blue-900 mb-2">Select Class</p>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
-        {availableClasses.map((c) => (
-          <button
-            key={c}
-            onClick={() => setSelectedClass(c)}
-            className={`px-3 py-2 rounded-lg border text-sm transition-all ${
-              selectedClass === c ? "border-blue-600 text-blue-700" : "border-gray-300 text-gray-700"
-            }`}
-          >
-            {c}
-          </button>
-        ))}
-      </div>
-
-      <p className="font-semibold text-blue-900 mb-2">Select Section</p>
-      <div className="flex flex-wrap gap-3 mb-6">
-        {availableSections.map((s) => (
-          <button
-            key={s}
-            onClick={() => setSelectedSection(s)}
-            className={`px-3 py-1.5 rounded-lg border text-sm transition-all ${
-              selectedSection === s ? "border-blue-600 text-blue-700" : "border-gray-300 text-gray-800"
-            }`}
-          >
-            {s}
-          </button>
-        ))}
-      </div>
-
-      {/* ADD BUTTON */}
-      <button
-        onClick={addClass}
-        disabled={loading}
-        className="w-full py-2 rounded-xl border text-blue-700 font-semibold text-sm flex justify-center items-center gap-2 hover:bg-blue-50 transition-all"
-      >
-        {loading ? "Adding..." : <><IoAddCircleOutline size={20} /> Add Class</>}
-      </button>
-
-      {/* CLASS LIST */}
-      <h1 className="text-center text-xl md:text-2xl font-bold text-blue-900 mt-10 mb-5">
-        Class List
-      </h1>
-
-      {initialLoad ? (
-        <p className="text-center text-gray-600 animate-pulse">Loading...</p>
-      ) : classes.length === 0 ? (
-        <p className="text-center text-gray-500">No classes added yet.</p>
-      ) : (
-        <div className="space-y-4">
-          {classes.map((item) => (
-            <div
-              key={item._id}
-              className="bg-white/70 p-4 rounded-xl shadow flex justify-between items-center border"
-            >
-              <div className="flex items-center gap-3">
-                <IoSchoolOutline size={22} className="text-blue-700" />
-                <p className="font-semibold text-gray-800 text-sm">
-                  {item.className}
-                  {item.sectionName && ` - ${item.sectionName}`}
-                </p>
-              </div>
-
-              <button
-                onClick={() => handleDelete(item._id)}
-                disabled={loadingDelete === item._id}
-                className="p-2 rounded-lg border border-red-300 hover:bg-red-50 transition-all"
-              >
-                {loadingDelete === item._id ? (
-                  <span className="text-red-600 text-xs">Deleting...</span>
-                ) : (
-                  <IoTrashOutline size={18} className="text-red-500" />
-                )}
-              </button>
-            </div>
-          ))}
+        {/* HEADER */}
+        <div className="text-center mb-10">
+          <h1 className="text-3xl font-extrabold text-blue-900">
+            Class Management
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Add and manage school classes
+          </p>
         </div>
-      )}
+
+        {/* CLASS SELECT */}
+        <Section title="Select Class">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {availableClasses.map((cls) => (
+              <Chip
+                key={cls}
+                active={selectedClass === cls}
+                onClick={() => setSelectedClass(cls)}
+              >
+                {cls}
+              </Chip>
+            ))}
+          </div>
+        </Section>
+
+        {/* SECTION SELECT */}
+        <Section
+          title={
+            <>
+              Select Section
+              {selectedSection && (
+                <span className="ml-2 text-xs text-gray-500">
+                  (Selected: {selectedSection})
+                </span>
+              )}
+            </>
+          }
+        >
+          <div className="flex flex-wrap gap-3">
+            {availableSections.map((sec) => (
+              <Chip
+                key={sec}
+                active={selectedSection === sec}
+                onClick={() => toggleSection(sec)}
+              >
+                {selectedSection === sec ? `✓ Section ${sec}` : `Section ${sec}`}
+              </Chip>
+            ))}
+          </div>
+        </Section>
+
+        {/* ADD BUTTON */}
+        <button
+          onClick={addClass}
+          disabled={loading}
+          className={`bg-blue-500 text-white p-2 rounded-md flex items-center justify-center gap-2 transition ${loading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-600"}`}
+
+        >
+          {loading ? "Adding..." : <><IoAddCircleOutline size={20}/> Add Class</>}
+        </button>
+
+        {/* LIST */}
+        <h2 className="text-xl font-bold text-blue-900 text-center mt-12 mb-6">
+          Added Classes
+        </h2>
+
+        {initialLoad ? (
+          <p className="text-center text-gray-400 animate-pulse">Loading...</p>
+        ) : classes.length === 0 ? (
+          <p className="text-center text-gray-500">No classes added yet</p>
+        ) : (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+  {classes.map((item) => (
+    <div
+      key={item._id}
+      className="bg-white rounded-xl p-4 shadow-sm border hover:shadow-md transition"
+    >
+      {/* HEADER ROW */}
+      <div className="flex items-start justify-between gap-3">
+        {/* CLASS INFO */}
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-blue-50 shrink-0">
+            <IoSchoolOutline className="text-blue-600" size={22} />
+          </div>
+
+          <p className="font-medium text-gray-800 leading-snug">
+            {item.className}
+            {item.sectionName && (
+              <span className="text-gray-500">{" "}– {item.sectionName}</span>
+            )}
+          </p>
+        </div>
+
+        {/* DELETE ACTION */}
+        <button
+          onClick={() => deleteClass(item._id)}
+          disabled={loadingDelete === item._id}
+          className="p-2 rounded-lg border border-red-200 hover:bg-red-50 transition disabled:opacity-60"
+        >
+          {loadingDelete === item._id ? (
+            <span className="text-xs text-red-500">Deleting…</span>
+          ) : (
+            <IoTrashOutline className="text-red-500" />
+          )}
+        </button>
+      </div>
+    </div>
+  ))}
+</div>
+
+
+        )}
+      </div>
     </div>
   );
 }
+
+/* ---------- UI HELPERS ---------- */
+
+const Section = ({ title, children }) => (
+  <div className="mb-6">
+    <p className="font-semibold text-blue-900 mb-3">{title}</p>
+    {children}
+  </div>
+);
+
+const Chip = ({ active, children, ...props }) => (
+  <button
+    {...props}
+    className={`px-4 py-2 rounded-full border text-sm font-medium transition
+      ${
+        active
+          ? "bg-blue-100 text-blue-700 border-blue-500 shadow-sm"
+          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+      }
+    `}
+  >
+    {children}
+  </button>
+);

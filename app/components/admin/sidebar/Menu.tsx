@@ -56,18 +56,18 @@ const Menu: React.FC<MenuProps> = ({ slug ,schoolId }) => {
           href: slug ? `/list/${slug}/${schoolId}/classes` : "#",
           visible: ["admin", "teacher"],
         },
-        {
-          icon: "/lesson.png",
-          label: "Lessons",
-          href: slug ? `/list/${slug}/${schoolId}/lessons` : "#",
-          visible: ["admin", "teacher"],
-        },
-        {
-          icon: "/exam.png",
-          label: "Exams",
-          href: slug ? `/list/${slug}/${schoolId}/exams` : "#",
-          visible: ["admin", "teacher", "student", "parent"],
-        },
+        // {
+        //   icon: "/lesson.png",
+        //   label: "Lessons",
+        //   href: slug ? `/list/${slug}/${schoolId}/lessons` : "#",
+        //   visible: ["admin", "teacher"],
+        // },
+        // {
+        //   icon: "/exam.png",
+        //   label: "Exams",
+        //   href: slug ? `/list/${slug}/${schoolId}/exams` : "#",
+        //   visible: ["admin", "teacher", "student", "parent"],
+        // },
         {
           icon: "/assignment.png",
           label: "Assignments",
@@ -86,15 +86,15 @@ const Menu: React.FC<MenuProps> = ({ slug ,schoolId }) => {
           href: slug ? `/list/${slug}/${schoolId}/attendance` : "#",
           visible: ["admin", "teacher", "student", "parent"],
         },
-        {
-          icon: "/calendar.png",
-          label: "Events",
-          href: slug ? `/list/${slug}/${schoolId}/events` : "#",
-          visible: ["admin", "teacher", "student", "parent"],
-        },
+        // {
+        //   icon: "/calendar.png",
+        //   label: "Events",
+        //   href: slug ? `/list/${slug}/${schoolId}/events` : "#",
+        //   visible: ["admin", "teacher", "student", "parent"],
+        // },
         {
           icon: "/announcement.png",
-          label: "Announcements",
+          label: "Notices",
           href: slug ? `/list/${slug}/${schoolId}/announcements` : "#",
           visible: ["admin", "teacher", "student", "parent"],
         },

@@ -7,10 +7,11 @@ import { AnimatePresence, motion } from "framer-motion";
 
 const TeacherForm = dynamic(() => import("./forms/TeacherForm"), { loading: () => <p>Loading...</p> });
 const StudentForm = dynamic(() => import("./forms/StudentForm"), { loading: () => <p>Loading...</p> });
-const StudentUpdateForm = dynamic(() => import("./forms/StudentUpdateForm"), { loading: () => <p>Loading...</p> });
 const SubjectForm = dynamic(() => import("./forms/SubjectForm"), { loading: () => <p>Loading...</p> });
+const NoticeForm = dynamic(() => import("./forms/NoticeForm"), { loading: () => <p>Loading...</p> });
+const HomeworkForm = dynamic(() => import("./forms/HomeworkForm"), { loading: () => <p>Loading...</p> });
 
-const FormModal = ({ table, schoolId, type, data, onSuccess }) => {
+const FormModal = ({ table, schoolId, type, data, onSuccess , classId}) => {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -85,6 +86,22 @@ const FormModal = ({ table, schoolId, type, data, onSuccess }) => {
                     data={data}
                     schoolId={schoolId}
                   />
+                )}
+                {table === "notice" && (type === "create" || type === "update") && (
+                  <NoticeForm
+                    type={type}
+                    data={data}
+                    schoolId={schoolId}
+                  />
+                )}
+                {table === "homework" && (type === "create" || type === "update") && (
+                  <HomeworkForm
+                    type={type}
+                    data={data}
+                    schoolId={schoolId}
+                    classId={classId}
+                  />
+
                 )}
               </div>
             </motion.div>

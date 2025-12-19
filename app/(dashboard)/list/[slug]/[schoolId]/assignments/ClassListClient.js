@@ -8,7 +8,7 @@ export default function ClassListClient({ classes, slug, schoolId }) {
   const router = useRouter();
 
   const handleClassClick = (classId) => {
-    router.push(`/list/${slug}/${schoolId}/students/studentList/${classId}`);
+    router.push(`/list/${slug}/${schoolId}/assignments/${classId}`);
   };
 
   if (!classes.length) {
