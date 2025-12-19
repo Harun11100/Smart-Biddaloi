@@ -1,5 +1,4 @@
 import Notice from "@/app/model/Notice";
-import School from "@/app/model/School";
 import connectDb from "@/app/utils/db";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
@@ -9,7 +8,7 @@ export async function PUT(req, { params }) {
     await connectDb();
 
     const { noticeId } = params;
-    const { schoolId, title, description, date } = await req.json();
+    const { title, description } = await req.json();
 
     /* ================= VALIDATION ================= */
     if (!mongoose.Types.ObjectId.isValid(noticeId)) {
@@ -19,37 +18,18 @@ export async function PUT(req, { params }) {
       );
     }
 
-    if (!schoolId || !title || !description) {
+    if (!title || !description) {
       return NextResponse.json(
-        {
-          success: false,
-          message: "schoolId, শিরোনাম এবং বর্ণনা আবশ্যক",
-        },
+        { success: false, message: "শিরোনাম এবং বর্ণনা আবশ্যক" },
         { status: 400 }
       );
     }
 
-    /* ================= SCHOOL CHECK ================= */
-    const schoolExists = await School.findById(schoolId);
-    if (!schoolExists) {
-      return NextResponse.json(
-        { success: false, message: "স্কুল পাওয়া যায়নি" },
-        { status: 404 }
-      );
-    }
-
     /* ================= NOTICE CHECK ================= */
-    const notice = await Notice.findOne({
-      _id: noticeId,
-      schoolId,
-    });
-
+    const notice = await Notice.findById(noticeId);
     if (!notice) {
       return NextResponse.json(
-        {
-          success: false,
-          message: "এই স্কুলের জন্য নোটিশ পাওয়া যায়নি",
-        },
+        { success: false, message: "নোটিশ পাওয়া যায়নি" },
         { status: 404 }
       );
     }
@@ -57,7 +37,7 @@ export async function PUT(req, { params }) {
     /* ================= UPDATE ================= */
     notice.title = title;
     notice.description = description;
-    notice.date = date || notice.date;
+    notice.updatedAt = new Date();
 
     await notice.save();
 
@@ -69,10 +49,7 @@ export async function PUT(req, { params }) {
   } catch (error) {
     console.error("❌ Error updating notice:", error);
     return NextResponse.json(
-      {
-        success: false,
-        message: "সার্ভার ত্রুটি! নোটিশ আপডেট ব্যর্থ হয়েছে",
-      },
+      { success: false, message: "নোটিশ আপডেট ব্যর্থ হয়েছে" },
       { status: 500 }
     );
   }

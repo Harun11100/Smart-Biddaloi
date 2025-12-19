@@ -4,25 +4,42 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import axios from "axios";
-import InputField from "../InputField";
+import { useState } from "react";
 import ClipLoader from "react-spinners/ClipLoader";
+import { BsCalendar } from "react-icons/bs";
 
+/* ---------------- Schema ---------------- */
 const schema = z.object({
-  name: z.string().min(1, { message: "Name is required!" }),
-  userName: z.string().optional(),
-  email: z.string().email({ message: "Invalid email address!" }),
-  password: z.string().min(4, { message: "Pin must be at least 4 characters!" }),
-  gender: z.enum(["male", "female"]).optional(),
-  phone: z.string().min(1, { message: "Phone is required!" }),
-  role: z.string().min(1, { message: "Role is required!" }),
-  address: z.string().optional(),
-  bloodGroup: z.string().optional(),
-  nid: z.string().optional(),
-  classTeacher: z.string().optional(),
-  subjects: z.string().optional(),
+  title: z.string().min(1, { message: "Subject is required!" }),
+  description: z.string().min(1, { message: "Description is required!" }),
+  dueDate: z.string().min(1, { message: "Due date is required!" }),
 });
 
-const TeacherForm = ({ type, data = {}, loading = false, schoolId, onSuccess }) => {
+/* ---------------- Reusable Input ---------------- */
+const InputField = ({
+  label,
+  type = "text",
+  register,
+  name,
+  error,
+  inputProps,
+}) => (
+  <div className="flex flex-col gap-1">
+    <label className="text-xs text-gray-500">{label}</label>
+    <input
+      type={type}
+      {...register(name)}
+      className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+      {...inputProps}
+    />
+    {error?.message && (
+      <p className="text-xs text-red-400">{error.message}</p>
+    )}
+  </div>
+);
+
+/* ---------------- Homework Form ---------------- */
+const HomeworkForm = ({ type = "create", data = {}, schoolId, classId, onSuccess }) => {
   const {
     register,
     handleSubmit,
@@ -30,31 +47,36 @@ const TeacherForm = ({ type, data = {}, loading = false, schoolId, onSuccess }) 
     reset,
   } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: data,
+    defaultValues: {
+      title: data.title || "",
+      description: data.description || "",
+      dueDate: data?.dueDate ? data.dueDate.slice(0, 10) : "",
+    },
   });
 
+  const [loading, setLoading] = useState(false);
+
   const submitHandler = async (values) => {
+    setLoading(true);
     try {
       const payload = {
         ...values,
         schoolId,
-        subjects: values.subjects?.split(",").map((s) => s.trim()) || [],
-        gender: values.gender || "male",
-        ...(type === "update" ? { teacherId: data._id } : {}),
+        classId,
       };
 
-      const url =
-        type === "create"
-          ? "/api/school/createTeacher"
-          : "/api/school/editTeacher";
-
-      const res =
-        type === "create"
-          ? await axios.post(url, payload)
-          : await axios.put(url, payload);
+      let res;
+      if (type === "create") {
+        res = await axios.post("/api/teacher/Homework/createHomework", payload);
+      } else {
+        res = await axios.put(
+          `/api/teacher/Homework/updateHomework/${data._id}`,
+          payload
+        );
+      }
 
       if (res.data.success) {
-        alert(type === "create" ? "Teacher created successfully!" : "Teacher updated successfully!");
+        alert(type === "create" ? "Homework created!" : "Homework updated!");
         reset();
         onSuccess?.();
       } else {
@@ -62,44 +84,64 @@ const TeacherForm = ({ type, data = {}, loading = false, schoolId, onSuccess }) 
       }
     } catch (err) {
       console.error(err);
-      alert("Something went wrong. Please try again.");
+      alert("Something went wrong!");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form className="flex flex-col gap-6" onSubmit={handleSubmit(submitHandler)}>
+    <form onSubmit={handleSubmit(submitHandler)} className="flex flex-col gap-6">
       <h1 className="text-xl font-semibold">
-        {type === "create" ? "Create a new teacher" : "Update teacher"}
+        {type === "create" ? "Create Homework" : "Update Homework"}
       </h1>
 
-      <span className="text-xs text-gray-400 font-medium">Authentication Information</span>
-      <div className="flex flex-wrap gap-4">
-        <InputField label="Username" name="userName" register={register} defaultValue={data.userName} error={errors.userName} />
-        <InputField label="Email" name="email" register={register} defaultValue={data.email} error={errors.email} />
-        <InputField label="Pin" type="password" name="password" register={register} defaultValue={data.password} error={errors.password} />
-      </div>
+      {/* Section */}
+      <span className="text-xs text-gray-400 font-medium">
+        Homework Information
+      </span>
 
-      <span className="text-xs text-gray-400 font-medium">Personal Information</span>
-      <div className="flex flex-wrap gap-4">
-        <InputField label="Full Name" name="name" register={register} defaultValue={data.name} error={errors.name} />
-        <InputField label="Phone" name="phone" register={register} defaultValue={data.phone} error={errors.phone} />
-        <InputField label="Role" name="role" register={register} defaultValue={data.role} error={errors.role} />
-        <InputField label="Address" name="address" register={register} defaultValue={data.address} error={errors.address} />
-        <InputField label="Blood Group" name="bloodGroup" register={register} defaultValue={data.bloodGroup} error={errors.bloodGroup} />
-        <InputField label="NID" name="nid" register={register} defaultValue={data.nid} error={errors.nid} />
-        <InputField label="Class Teacher Of" name="classTeacher" register={register} defaultValue={data.classTeacher} error={errors.classTeacher} />
-        <InputField label="Subjects (comma-separated)" name="subjects" register={register} defaultValue={data.subjects} error={errors.subjects} />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <InputField
+          label="Subject"
+          name="title"
+          register={register}
+          error={errors.title}
+        />
 
-        <div className="flex flex-col gap-2 w-full md:w-1/4">
-          <label className="text-xs text-gray-500">Gender</label>
-          <select className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full" {...register("gender")} defaultValue={data.gender || "male"}>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-          </select>
-          {errors.gender && <p className="text-xs text-red-400">{errors.gender.message}</p>}
+        {/* Due Date */}
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-gray-500">Due Date</label>
+          <div className="relative">
+            <input
+              type="date"
+              {...register("dueDate")}
+              className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+            />
+            <BsCalendar className="absolute right-3 top-2.5 text-gray-400" />
+          </div>
+          {errors.dueDate && (
+            <p className="text-xs text-red-400">{errors.dueDate.message}</p>
+          )}
         </div>
       </div>
 
+      {/* Description */}
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-gray-500">Homework Details</label>
+        <textarea
+          {...register("description")}
+          rows={4}
+          className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full resize-none"
+        />
+        {errors.description && (
+          <p className="text-xs text-red-400">
+            {errors.description.message}
+          </p>
+        )}
+      </div>
+
+      {/* Submit Button */}
       <button
         type="submit"
         disabled={loading}
@@ -108,10 +150,10 @@ const TeacherForm = ({ type, data = {}, loading = false, schoolId, onSuccess }) 
         }`}
       >
         {loading && <ClipLoader color="#fff" size={16} />}
-        {type === "create" ? "Create Teacher" : "Update Teacher"}
+        {type === "create" ? "Create Homework" : "Update Homework"}
       </button>
     </form>
   );
 };
 
-export default TeacherForm;
+export default HomeworkForm;

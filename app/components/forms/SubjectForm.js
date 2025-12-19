@@ -1,157 +1,145 @@
-"use client";
+'use client';
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { useState, useEffect } from "react";
 import axios from "axios";
-import InputField from "../InputField";
-import ClipLoader from "react-spinners/ClipLoader";
 
-/* =========================
-   Zod Schema
-========================= */
-const schema = z.object({
-  name: z.string().min(1, { message: "Subject name is required!" }),
-  code: z
-    .string()
-    .min(1, { message: "Subject code is required!" })
-    .toUpperCase(),
-  creditHours: z.coerce.string().optional(),
-  maxMarks: z.coerce.string().optional(),
-  passingMarks: z.coerce.string().optional(),
-});
+export default function SubjectForm({ type, data, schoolId, onSuccess }) {
+  const [name, setName] = useState("");
+  const [code, setCode] = useState("");
+  const [creditHours, setCreditHours] = useState(0);
+  const [maxMarks, setMaxMarks] = useState(100);
+  const [passingMarks, setPassingMarks] = useState(33);
+  const [loading, setLoading] = useState(false);
 
-/* =========================
-   Component
-========================= */
-const SubjectForm = ({
-  onSubmit,
-  schoolId,
-  data,
-  type,
-  loading = false,
-  onSuccess,
-}) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      creditHours: "",
-      maxMarks: "",
-      passingMarks: "",
-      ...data,
-    },
-  });
+  useEffect(() => {
+    if (type === "update" && data) {
+      setName(data.name || "");
+      setCode(data.code || "");
+      setCreditHours(data.creditHours ?? 0);
+      setMaxMarks(data.maxMarks ?? 100);
+      setPassingMarks(data.passingMarks ?? 33);
+    }
+  }, [type, data]);
 
-  const submitHandler = async (values) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!name || !code) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      const payload = {
-        ...values,
-        schoolId,
-        ...(type === "update" ? { subjectId: data?._id } : {}),
-      };
+      let response;
+      if (type === "create") {
+        response = await axios.post("/api/school/subject/createSubject", {
+          schoolId,
+          name,
+          code,
+          creditHours,
+          maxMarks,
+          passingMarks,
+        });
+      } else if (type === "update") {
+        response = await axios.put("/api/school/subject/updateSubject", {
+          subjectId: data._id,
+          name,
+          code,
+          creditHours,
+          maxMarks,
+          passingMarks,
+        });
+      }
 
-      const url =
-        type === "create"
-          ? "/api/school/subject/createSubject"
-          : "/api/school/subject/updateSubject";
+      const resData = response.data;
 
-      const res =
-        type === "create"
-          ? await axios.post(url, payload)
-          : await axios.put(url, payload);
-
-      if (res.data.success) {
-        alert(
-          type === "create"
-            ? "Subject created successfully!"
-            : "Subject updated successfully!"
-        );
-        reset();
-        onSuccess?.();
+      if (resData.success) {
+        alert(type === "create" ? "Subject created!" : "Subject updated!");
+        onSuccess?.(resData.data);
       } else {
-        alert(res.data.message || "Operation failed");
+        alert(resData.message || "Something went wrong!");
       }
     } catch (err) {
       console.error(err);
-      alert("Something went wrong. Please try again.");
+      alert("Failed to save subject.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <form
-      className="flex flex-col gap-6"
-      onSubmit={handleSubmit(submitHandler)}
+      onSubmit={handleSubmit}
+      className="max-w-2xl mx-auto  rounded-xl space-y-6"
     >
-      <h1 className="text-xl font-semibold">
-        {type === "create" ? "Create New Subject" : "Update Subject"}
-      </h1>
+      <h2 className="text-2xl font-bold text-gray-800">
+        {type === "create" ? "Add Subject" : "Update Subject"}
+      </h2>
 
-      <span className="text-xs text-gray-400 font-medium">
-        Subject Information
-      </span>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex flex-col">
+          <label className="mb-1 font-medium text-gray-700">Subject Name</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
 
-      <div className="flex flex-wrap gap-4">
-        <InputField
-          label="Subject Name"
-          name="name"
-          register={register("name")}
-          defaultValue={data?.name}
-          error={errors.name}
-        />
+        <div className="flex flex-col">
+          <label className="mb-1 font-medium text-gray-700">Code</label>
+          <input
+            type="text"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+      </div>
 
-        <InputField
-          label="Subject Code"
-          name="code"
-          register={register("code")}
-          defaultValue={data?.code}
-          error={errors.code}
-        />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="flex flex-col">
+          <label className="mb-1 font-medium text-gray-700">Credit Hours</label>
+          <input
+            type="number"
+            value={creditHours}
+            onChange={(e) => setCreditHours(Number(e.target.value))}
+            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
 
-        <InputField
-          label="Credit Hours"
-          name="creditHours"
-          type="number"
-          register={register("creditHours")}
-          defaultValue={data?.creditHours}
-          error={errors.creditHours}
-        />
+        <div className="flex flex-col">
+          <label className="mb-1 font-medium text-gray-700">Max Marks</label>
+          <input
+            type="number"
+            value={maxMarks}
+            onChange={(e) => setMaxMarks(Number(e.target.value))}
+            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
 
-        <InputField
-          label="Max Marks"
-          name="maxMarks"
-          type="number"
-          register={register("maxMarks")}
-          defaultValue={data?.maxMarks}
-          error={errors.maxMarks}
-        />
-
-        <InputField
-          label="Passing Marks"
-          name="passingMarks"
-          type="number"
-          register={register("passingMarks")}
-          defaultValue={data?.passingMarks}
-          error={errors.passingMarks}
-        />
+        <div className="flex flex-col">
+          <label className="mb-1 font-medium text-gray-700">Passing Marks</label>
+          <input
+            type="number"
+            value={passingMarks}
+            onChange={(e) => setPassingMarks(Number(e.target.value))}
+            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className={`bg-indigo-600 text-white p-2 rounded-md font-medium flex items-center justify-center gap-2 transition ${
-          loading ? "opacity-50 cursor-not-allowed" : "hover:bg-indigo-700"
-        }`}
+        className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-60"
       >
-        {loading && <ClipLoader color="#fff" size={16} />}
-        {type === "create" ? "Create Subject" : "Update Subject"}
+        {loading ? "Saving..." : type === "create" ? "Create Subject" : "Update Subject"}
       </button>
     </form>
   );
-};
-
-export default SubjectForm;
+}
