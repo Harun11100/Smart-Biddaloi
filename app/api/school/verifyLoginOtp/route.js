@@ -47,7 +47,7 @@ export async function POST(req) {
         schoolName: school.name,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" } // valid for 3 day
+      { expiresIn: "15d" } // valid for 15 day
     );
     console.log(token)
     // ✅ Return success + token
