@@ -50,6 +50,17 @@ const teacherSchema = new mongoose.Schema(
     loginOTP: { type: String, default: null },
 
     loginOTPExpiry: { type: Date, default: null },
+    answerKey: {
+      type: Object, // { "1": "A", "2": "B" }
+      default: {},
+    },
+    rawAnswerKey: {
+      type: String,
+      default: "",
+    },
+    answerKeyUpdatedAt: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );
