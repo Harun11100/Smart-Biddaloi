@@ -14,7 +14,7 @@ export async function POST(req) {
         { status: 400 }
       );
     }
-
+    
     const school = await School.findById(schoolId);
     if (!school) {
       return NextResponse.json(
