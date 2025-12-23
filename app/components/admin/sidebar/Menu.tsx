@@ -56,12 +56,12 @@ const Menu: React.FC<MenuProps> = ({ slug ,schoolId }) => {
           href: slug ? `/list/${slug}/${schoolId}/classes` : "#",
           visible: ["admin", "teacher"],
         },
-        // {
-        //   icon: "/lesson.png",
-        //   label: "Lessons",
-        //   href: slug ? `/list/${slug}/${schoolId}/lessons` : "#",
-        //   visible: ["admin", "teacher"],
-        // },
+        {
+          icon: "/lesson.png",
+          label: "OmrCheck",
+          href: slug ? `/list/${slug}/${schoolId}/omrcheck` : "#",
+          visible: ["admin", "teacher"],
+        },
         // {
         //   icon: "/exam.png",
         //   label: "Exams",

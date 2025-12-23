@@ -1,114 +1,146 @@
+export const runtime = "nodejs"; // REQUIRED — must be top-level
+
 import { NextResponse } from "next/server";
 import connectDb from "@/app/utils/db";
 import Teacher from "@/app/model/Teacher";
-import fs from "fs";
 
-export const config = {
-  api: { bodyParser: false }, // keep false for file uploads
-};
+import fs from "fs/promises"; // ✅ IMPORTANT
+import path from "path";
+import os from "os";
 
 /* ================= HELPER: CALL GEMINI ================= */
 async function detectOmrAnswersWithGemini(filePath) {
-  const imageBuffer = fs.readFileSync(filePath);
-  const base64Image = imageBuffer.toString("base64");
+  // DEV MOCK (prevents API spam)
+  if (process.env.NODE_ENV === "development") {
+    return { "1": "A", "2": "B", "3": "C" };
+  }
 
-  const GEMINI_API_URL = process.env.GEMINI_API_URL;
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  const GEMINI_API_URL =
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+
+  if (!GEMINI_API_KEY) {
+    return { error: "Gemini API key missing" };
+  }
+
+  const imageBuffer = await fs.readFile(filePath);
+  const base64Image = imageBuffer.toString("base64");
 
   const prompt = `
 You are an AI OMR checker.
-The student OMR sheet is provided as an image (base64).
-Extract the answers and return ONLY a JSON object in this format:
-{"1":"A","2":"B","3":"C",...}
-Only include questions that are answered, ignore blanks.
+Extract answers from the OMR sheet image.
+Return ONLY valid JSON like:
+{"1":"A","2":"B","3":"C"}
+Ignore unanswered questions.
 `;
 
-  const response = await fetch(GEMINI_API_URL, {
+  const res = await fetch(GEMINI_API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${GEMINI_API_KEY}`,
+      "X-goog-api-key": GEMINI_API_KEY,
     },
     body: JSON.stringify({
-      prompt,
-      image: base64Image,
-      max_tokens: 500,
+      contents: [
+        {
+          parts: [
+            { text: prompt },
+            {
+              inlineData: {
+                mimeType: "image/png",
+                data: base64Image,
+              },
+            },
+          ],
+        },
+      ],
     }),
   });
 
-  const data = await response.json();
+  if (!res.ok) {
+    return { error: `Gemini failed (${res.status})` };
+  }
+
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+  if (!text) return { error: "No Gemini output" };
 
   try {
-    const studentAnswers = JSON.parse(data.text);
-    return studentAnswers;
-  } catch (err) {
-    console.error("Error parsing Gemini response:", err);
-    return {};
+    return JSON.parse(text);
+  } catch {
+    return { error: "Invalid JSON from Gemini" };
   }
 }
 
 /* ================= API ROUTE ================= */
 export async function POST(req) {
+  let tempPath;
+
   try {
     await connectDb();
 
-    // Parse multipart form data
     const formData = await req.formData();
     const teacherId = formData.get("teacherId");
     const imageFile = formData.get("image");
 
     if (!teacherId || !imageFile) {
       return NextResponse.json(
-        { success: false, message: "Missing teacherId or image file" },
+        { success: false, message: "Missing data" },
         { status: 400 }
       );
     }
 
     const teacher = await Teacher.findById(teacherId);
-    if (!teacher || !teacher.answerKey) {
+    if (!teacher?.answerKey) {
       return NextResponse.json(
-        { success: false, message: "Teacher not found or answer key not set" },
+        { success: false, message: "Answer key not found" },
         { status: 404 }
       );
     }
 
-    // Save uploaded image temporarily
-    const arrayBuffer = await imageFile.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const tempPath = `./tmp_${Date.now()}.png`;
-    fs.writeFileSync(tempPath, buffer);
+    const buffer = Buffer.from(await imageFile.arrayBuffer());
+    tempPath = path.join(os.tmpdir(), `omr_${Date.now()}.png`);
+    await fs.writeFile(tempPath, buffer);
 
-    // 1️⃣ Detect student answers using Gemini
     const studentAnswers = await detectOmrAnswersWithGemini(tempPath);
 
-    // 2️⃣ Compare with teacher's answer key
-    const answerKey = teacher.answerKey;
-    let score = 0;
-    const total = Object.keys(answerKey).length;
+    if (studentAnswers.error) {
+      return NextResponse.json(
+        { success: false, message: studentAnswers.error },
+        { status: 502 }
+      );
+    }
 
-    Object.keys(answerKey).forEach((q) => {
+    let score = 0;
+    const answerKey = teacher.answerKey;
+
+    for (const q in answerKey) {
       if (
-        studentAnswers[q] &&
-        studentAnswers[q].toUpperCase() === answerKey[q].toUpperCase()
+        studentAnswers[q]?.toUpperCase() ===
+        answerKey[q]?.toUpperCase()
       ) {
         score++;
       }
-    });
-
-    // Delete temp file
-    fs.unlinkSync(tempPath);
+    }
 
     return NextResponse.json({
       success: true,
       score,
-      total,
+      total: Object.keys(answerKey).length,
       studentAnswers,
     });
   } catch (err) {
-    console.error("OMR Check Error:", err);
+    console.error(err);
     return NextResponse.json(
-      { success: false, message: "Internal server error" },
+      { success: false, message: "Server error" },
       { status: 500 }
     );
+  } finally {
+    if (tempPath) {
+      try {
+        await fs.unlink(tempPath);
+      } catch {}
+    }
   }
 }
