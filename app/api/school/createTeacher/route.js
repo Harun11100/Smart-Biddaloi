@@ -2,6 +2,7 @@ import School from "@/app/model/School";
 import Teacher from "@/app/model/Teacher";
 import connectDb from "@/app/utils/db";
 import { NextResponse } from "next/server";
+import nodemailer from "nodemailer";
 
 export async function POST(req) {
   try {
@@ -72,6 +73,27 @@ export async function POST(req) {
       subjects: newTeacher.subjects,
       gender: newTeacher.gender,
     };
+
+    const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: process.env.GMAIL_USER,
+            pass: process.env.GMAIL_PASS,
+          },
+        });
+    
+        await transporter.sendMail({
+          from: `"Smart School Manager" <${process.env.GMAIL_USER}>`,
+          to:email,
+          subject: "নিবন্ধন সফল হয়েছে",
+         html: `
+          <p>প্রিয় ${name},</p>
+          <p>আপনাকে <strong>Smart School Manager</strong>-এ সফলভাবে শিক্ষক হিসেবে নিবন্ধন করা হয়েছে।</p>
+          <p>আপনার অ্যাকাউন্ট এখন ব্যবহার করার জন্য প্রস্তুত।</p>
+          <br/>
+          <p>ধন্যবাদ,<br/>Smart School Manager টিম</p>
+        `
+        });
 
     return NextResponse.json(
       { success: true, message: "শিক্ষক সফলভাবে যুক্ত হয়েছে!", teacher: safeTeacher },
