@@ -143,10 +143,9 @@ const TeacherListPage = () => {
           <button className="w-10 h-10 flex items-center justify-center rounded-full bg-yellow-200 hover:bg-yellow-300 transition">
             <Image src="/sort.png" alt="Sort" width={16} height={16} />
           </button> */}
+         
           <FormModal schoolId={schoolId} table="teacher" type="create"/>
-            <div className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md transition transform hover:-translate-y-1">
-              <PlusIcon className="w-5 h-5" /> Add Teacher
-            </div>
+           
      
         </div>
       </div>

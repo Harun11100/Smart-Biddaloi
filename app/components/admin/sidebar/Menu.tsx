@@ -57,18 +57,6 @@ const Menu: React.FC<MenuProps> = ({ slug ,schoolId }) => {
           visible: ["admin", "teacher"],
         },
         {
-          icon: "/lesson.png",
-          label: "OmrCheck",
-          href: slug ? `/list/${slug}/${schoolId}/omrcheck` : "#",
-          visible: ["admin", "teacher"],
-        },
-        // {
-        //   icon: "/exam.png",
-        //   label: "Exams",
-        //   href: slug ? `/list/${slug}/${schoolId}/exams` : "#",
-        //   visible: ["admin", "teacher", "student", "parent"],
-        // },
-        {
           icon: "/assignment.png",
           label: "Assignments",
           href: slug ? `/list/${slug}/${schoolId}/assignments` : "#",
