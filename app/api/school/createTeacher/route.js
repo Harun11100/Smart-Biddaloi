@@ -25,7 +25,6 @@ export async function POST(req) {
       userName = "",
     } = body;
 
-    // Basic validation
     if (!email || !name || !password || !phone || !schoolId || !role) {
       return NextResponse.json(
         { success: false, message: "সব প্রয়োজনীয় তথ্য প্রদান করুন।" },
@@ -83,15 +82,15 @@ export async function POST(req) {
         });
     
         await transporter.sendMail({
-          from: `"Smart School Manager" <${process.env.GMAIL_USER}>`,
+          from: `"বারেন্ডা এফ চান একাডেমী" <${process.env.GMAIL_USER}>`,
           to:email,
           subject: "নিবন্ধন সফল হয়েছে",
          html: `
           <p>প্রিয় ${name},</p>
-          <p>আপনাকে <strong>Smart School Manager</strong>-এ সফলভাবে শিক্ষক হিসেবে নিবন্ধন করা হয়েছে।</p>
+          <p>আপনাকে <strong> বারেন্ডা এফ চান একাডেমীতে </strong>-এ সফলভাবে শিক্ষক হিসেবে নিবন্ধন করা হয়েছে।</p>
           <p>আপনার অ্যাকাউন্ট এখন ব্যবহার করার জন্য প্রস্তুত।</p>
           <br/>
-          <p>ধন্যবাদ,<br/>Smart School Manager টিম</p>
+          <p>ধন্যবাদ</p>
         `
         });
 
