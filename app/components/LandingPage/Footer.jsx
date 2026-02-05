@@ -87,7 +87,7 @@ export default function Footer() {
 
           {/* Management Link */}
           <a
-            href="https://smartbiddaloy.com"
+            href="/management"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-white hover:text-blue-200 transition-all duration-300 group"
