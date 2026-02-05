@@ -12,7 +12,7 @@ import {
 
 export default function Footer() {
   return (
-    <footer className="bg-gradient-to-tr from-blue-900 via-blue-800 to-blue-700 text-gray-200">
+    <footer className="bg-gradient-to-tr from-blue-500  to-blue-600 text-gray-200">
       {/* Top Footer */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 py-16 grid grid-cols-1 md:grid-cols-4 gap-10">
 
@@ -80,7 +80,7 @@ export default function Footer() {
 
       {/* Bottom Bar */}
       <div className="border-t border-white/10 py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-4 text-xs sm:text-sm md:text-base text-gray-400">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-4 text-xs sm:text-sm md:text-base text-gray-200">
           <p>
             © {new Date().getFullYear()} বারেন্ডা এফ. চান একাডেমী। সর্বস্বত্ব সংরক্ষিত।
           </p>
@@ -90,7 +90,7 @@ export default function Footer() {
             href="https://smartbiddaloy.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-all duration-300 group"
+            className="flex items-center gap-2 text-white hover:text-blue-200 transition-all duration-300 group"
           >
             <FaUserShield className="text-blue-400 group-hover:scale-110 transition-transform duration-300" />
             <span className="tracking-wide">Management Login</span>

@@ -12,13 +12,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Orchard Point School & College",
+  title: "Barenda F.Chan Academy",
   description:
     "A premier educational institution fostering excellence and holistic development.",
   keywords: [
-    "Orchard",
-    "Orchard School",
-    "Orchard Point School",
+    "Barenda F.Chan Academy",
+    "Barenda School",
+    "Barenda F Chan",
     "School in Bangladesh",
     "Quality Education",
     "Primary Education",
@@ -31,28 +31,28 @@ export const metadata = {
   ],
   authors: [
     {
-      name: "Orchard Point School & College",
-      url: "https://orchardpoint.edu.bd",
+      name: "Barenda F.Chan Academy",
+      url: "https://barendafchanacademy.com",
     },
   ],
   openGraph: {
-    title: "Orchard Point School & College",
+    title: "Barenda F.Chan Academy",
     description:
       "A premier educational institution fostering excellence and holistic development.",
     type: "website",
-    url: "https://orchardpoint.edu.bd",
+    url: "https://barendafchanacademy.com",
     images: [
       {
         url: "/image1.jpg",
         width: 1200,
         height: 630,
-        alt: "Orchard Point School & College",
+        alt: "Barenda F.Chan Academy",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Orchard Point School & College",
+    title: "Barenda F.Chan Academy",
     description:
       "A premier educational institution fostering excellence and holistic development.",
     images: ["/image2.jpg"],
