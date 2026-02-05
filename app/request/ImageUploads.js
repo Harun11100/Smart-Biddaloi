@@ -7,7 +7,7 @@ export const uploadImages = async (images) => {
     images.forEach((file) => formData.append("file", file));
     formData.append("path", "advertise"); // optional folder
 
-    const response = await axios.post("/api/cloudinaryProductUpload", formData, {
+    const response = await axios.post("/api/cloudinary", formData, {
       headers: { "Content-Type": "multipart/form-data" },
       timeout: 60000,
     });

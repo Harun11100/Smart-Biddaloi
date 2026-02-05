@@ -26,7 +26,7 @@ export async function POST(req) {
     }
 
     const school = await School.findOne({ phone: phoneTrimmed});
-    console.log("Found school:", school);
+    
     if (!school) {
       return NextResponse.json(
         { message: "School not found with this phone" },

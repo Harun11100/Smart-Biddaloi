@@ -176,7 +176,6 @@ export default function TeacherLoginPage() {
                 )}
               </div>
 
-              {/* Submit */}
               <button
                 type="submit"
                 disabled={loading}
