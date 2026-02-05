@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
+import Image from "next/image";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -56,12 +57,27 @@ export default function Navbar() {
       >
         <div className="flex items-center justify-between px-5 py-3 md:py-4">
           {/* Logo */}
-          <Link
-            href="#home"
-            className="text-lg md:text-xl font-bold text-blue-800"
-          >
-            বারেন্ডা এফ. চান একাডেমী
-          </Link>
+         <div className="flex items-center space-x-3 md:space-x-4 p-2 md:p-0">
+      {/* Logo */}
+      <div className="flex-shrink-0">
+        <Image
+          src="/schoolicon.png"
+          alt="Logo"
+          width={40}
+          height={40}
+          className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
+        />
+      </div>
+
+      {/* School Name */}
+      <Link
+        href="#home"
+        className="text-lg sm:text-sm md:text-2xl font-extrabold text-blue-800 hover:text-blue-600 transition-colors duration-300"
+      >
+        বারেন্ডা এফ. চান একাডেমী
+      </Link>
+    </div>
+          
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-6">

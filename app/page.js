@@ -16,10 +16,9 @@ export default async function HomePage() {
 
       <section
         id="home"
-
       >
         <FadeInSection>
-          <div className="px-6 md:px-12 lg:px-5 py-16 md:py-24">
+          <div className="px-0 md:px-12 lg:px-5 pb-12">
             <Hero />
           </div>
         </FadeInSection>
