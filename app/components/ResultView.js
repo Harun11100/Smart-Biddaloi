@@ -1,19 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
 
-export default function StudentResultView() {
-  const router = useRouter();
-  const { schoolId, studentId } = useParams() ?? {};
-
+export default function StudentResultView({ schoolId, studentId, type, onSuccess }) {
   const [examType, setExamType] = useState("");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
   const [deleteLoadingIds, setDeleteLoadingIds] = useState([]);
-  
-  console.log("StudentResultView params:", { schoolId, studentId });
+
   // Fetch results
   const fetchStudentResults = async (type) => {
     if (!type || !schoolId || !studentId) return;
@@ -116,10 +111,10 @@ export default function StudentResultView() {
                   </button>
                 </div>
 
-                {/* Table */}
-                <div className="overflow-x-auto rounded-lg">
+                {/* Scrollable Table */}
+                <div className="overflow-x-auto rounded-lg max-h-96 overflow-y-auto border border-gray-200">
                   <table className="min-w-full border-collapse border border-gray-200">
-                    <thead className="bg-blue-50">
+                    <thead className="bg-blue-50 sticky top-0 z-10">
                       <tr>
                         <th className="p-3 text-left">Subject</th>
                         <th className="p-3 text-left">Marks</th>

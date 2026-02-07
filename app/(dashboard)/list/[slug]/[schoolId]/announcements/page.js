@@ -62,17 +62,16 @@ const NoticePage = () => {
     <div className="max-w-5xl mx-auto p-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">📢 All Notices</h1>
+        <h1 className="text-2xl font-bold text-gray-800">All Announcements</h1>
           <div className="flex items-center">
-            <span className="text-gray-600 mr-4">
-            Add Notice
+            <span className="text-gray-600 mr-4 font-semibold">
+            Add New Announcement
             </span>
             <FormModal
             schoolId={schoolId}
             table="notice"
             type="create"
-            triggerClassName="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 shadow-md transition"
-            triggerText="Add Notice"
+            onSuccess={fetchNotices}
           />
        
           </div>

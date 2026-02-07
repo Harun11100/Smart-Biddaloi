@@ -2,6 +2,18 @@ import { NextResponse } from "next/server";
 import connectDb from "@/app/utils/db";
 import Result from "@/app/model/Result";
 
+const calculateFinalGrade = (gpa) => {
+  if (gpa === "F") return "F";
+  const g = Number(gpa);
+  if (g >= 5) return "A+";
+  if (g >= 4) return "A";
+  if (g >= 3.5) return "A-";
+  if (g >= 3) return "B+";
+  if (g >= 2.5) return "B";
+  if (g >= 2) return "C";
+  return "F";
+};
+
 export async function GET(req) {
   try {
     await connectDb();
@@ -11,41 +23,30 @@ export async function GET(req) {
     const studentId = searchParams.get("studentId");
     const examType = searchParams.get("examType");
 
-    // Build dynamic filter
     const filter = {};
     if (schoolId) filter.schoolId = schoolId;
     if (studentId) filter.studentId = studentId;
     if (examType) filter.examType = examType;
 
-    const results = await Result.find(filter).sort({ createdAt: -1 });
+    const results = await Result.find(filter).sort({ createdAt: -1 }).lean();
 
-    // Map results to include GPA, final grade, fail status
     const resultsWithGPA = results.map((result) => {
       const subjects = result.results || [];
 
-      const failed = subjects.some((sub) => sub.grade === "F" || sub.mark < sub.passingMarks);
+      const failed = subjects.some(
+        (sub) => sub.grade === "F" || sub.mark < sub.passingMarks
+      );
 
       const gpa = failed
         ? "F"
-        : (
-            subjects.reduce((acc, sub) => acc + (sub.point || 0), 0) / subjects.length
-          ).toFixed(2);
-
-      const finalGrade = gpa === "F" ? "F" : (() => {
-        const g = Number(gpa);
-        if (g >= 5) return "A+";
-        if (g >= 4) return "A";
-        if (g >= 3.5) return "A-";
-        if (g >= 3) return "B+";
-        if (g >= 2.5) return "B";
-        if (g >= 2) return "C";
-        return "F";
-      })();
+        : subjects.length
+        ? (subjects.reduce((acc, sub) => acc + (sub.point || 0), 0) / subjects.length).toFixed(2)
+        : "0.00";
 
       return {
-        ...result._doc,
+        ...result,
         gpa,
-        finalGrade,
+        finalGrade: calculateFinalGrade(gpa),
         failed,
       };
     });

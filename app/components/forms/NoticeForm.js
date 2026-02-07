@@ -67,8 +67,6 @@ const NoticeForm = ({ type = "create", data = {}, schoolId, onSuccess }) => {
         return alert(res.data.message || "Operation failed!");
       }
 
-      alert(isUpdate ? "Notice updated successfully!" : "Notice added successfully!");
-
       if (!isUpdate) {
         setTitle("");
         setDescription("");
@@ -86,15 +84,15 @@ const NoticeForm = ({ type = "create", data = {}, schoolId, onSuccess }) => {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       <h1 className="text-xl font-semibold">
-        {type === "update" ? "Update Notice" : "Create New Notice"}
+        {type === "update" ? "Update Announcement" : "Create New Announcement"}
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <InputField
-          label="Notice Title"
+          label="Anouncement Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Enter notice title"
+          placeholder="Enter announcement title"
         />
         <InputField
           label="Description"
@@ -113,7 +111,7 @@ const NoticeForm = ({ type = "create", data = {}, schoolId, onSuccess }) => {
         }`}
       >
         {loading && <ClipLoader color="#fff" size={16} />}
-        {type === "create" ? "Create Notice" : "Update Notice"}
+        {type === "create" ? "Create Announcement" : "Update Announcement"}
       </button>
     </form>
   );

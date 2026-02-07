@@ -43,7 +43,7 @@ export default function AccountsPage() {
         </p>
 
         {/* Teacher Button */}
-        <motion.button
+        {/* <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={() => router.push("/auth/sign-in-as-teacher")}
           className="flex items-center justify-center gap-2 w-full py-3 mb-4 rounded-xl text-white font-medium
@@ -51,7 +51,7 @@ export default function AccountsPage() {
         >
           <MdSchool size={26} />
           Teacher Login
-        </motion.button>
+        </motion.button> */}
 
         {/* Admin Button */}
         <motion.button
