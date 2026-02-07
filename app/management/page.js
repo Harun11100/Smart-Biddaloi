@@ -28,17 +28,22 @@ export default function AccountsPage() {
           initial={{ y: -15, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="w-28 h-28 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-[#E8F4FF] to-white shadow-md flex items-center justify-center"
+          className="w-28 h-28 mx-auto mb-6 rounded-full shadow-md flex items-center justify-center"
         >
-          <Image src="/schoolicon.png" alt="Logo" width={120} height={120} />
+          <Image src="/logo.png" alt="Logo" width={120} height={120} />
         </motion.div>
+        <div>
+          <h2 className="text-2xl sm:text-3xl md:text-2xl font-bold text-center text-blue-900 mb-6">
+            Welcome to Barenda F. Chan Academy
+          </h2>
+        </div>
 
-        <p className="text-gray-500 text-center mb-8">
+        <p className="text-gray-500 text-center mb-4">
           Choose a login option
         </p>
 
         {/* Teacher Button */}
-        <motion.button
+        {/* <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={() => router.push("/auth/sign-in-as-teacher")}
           className="flex items-center justify-center gap-2 w-full py-3 mb-4 rounded-xl text-white font-medium
@@ -46,7 +51,7 @@ export default function AccountsPage() {
         >
           <MdSchool size={26} />
           Teacher Login
-        </motion.button>
+        </motion.button> */}
 
         {/* Admin Button */}
         <motion.button
@@ -60,9 +65,9 @@ export default function AccountsPage() {
         </motion.button>
 
         {/* Future Options */}
-        <div className="text-center mt-6 text-sm text-gray-500">
+        {/* <div className="text-center mt-6 text-sm text-gray-500">
           <p>Parent & Student login will be available soon.</p>
-        </div>
+        </div> */}
 
       </motion.div>
 

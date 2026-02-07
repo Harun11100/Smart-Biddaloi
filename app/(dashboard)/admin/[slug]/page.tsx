@@ -221,9 +221,9 @@ if (loading)
             <EventCalendar />
           </div>
 
-          <div className="bg-white shadow rounded-xl p-4">
+          {/* <div className="bg-white shadow rounded-xl p-4">
             <Announcements/>
-          </div>
+          </div> */}
         </div>
       </div>
 

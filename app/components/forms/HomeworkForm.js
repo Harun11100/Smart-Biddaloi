@@ -90,7 +90,7 @@ export default function HomeworkUploadForm({ schoolId, classId, data, type }) {
             
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Subject
+                  Subject Name
                 </label>
                 <Field
                   name="title"

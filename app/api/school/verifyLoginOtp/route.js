@@ -47,10 +47,8 @@ export async function POST(req) {
         schoolName: school.name,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "15d" } // valid for 15 day
     );
-    console.log(token)
-    // ✅ Return success + token
+   
     return NextResponse.json({
       success: true,
       message: "OTP verified successfully.",

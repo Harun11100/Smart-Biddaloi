@@ -7,29 +7,30 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-interface SchoolData {
-  schoolId: string;
-  name?: string;
-  [key: string]: any;
-}
-
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function Layout({ children }) {
   const params = useParams();
   const router = useRouter();
-  const [schoolData, setSchoolData] = useState<SchoolData | null>(null);
+  const [schoolData, setSchoolData] = useState(null);
 
   // Handle slug if array
-  const slug = Array.isArray(params?.slug) ? params.slug[0] : params?.slug ?? "";
+  const slug = Array.isArray(params?.slug)
+    ? params.slug[0]
+    : params?.slug ?? "";
+
   const schoolId = schoolData?.schoolId ?? "";
+
   useEffect(() => {
     const stored = localStorage.getItem("schoolDetails");
+
     if (stored) {
       try {
-        const school: SchoolData = JSON.parse(stored);
+        const school = JSON.parse(stored);
+
         if (!school.schoolId) {
           router.push("/sign-in-as-admin");
           return;
         }
+
         setSchoolData(school);
       } catch (err) {
         console.error("Failed to parse schoolDetails from localStorage", err);
@@ -45,20 +46,25 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {/* SIDEBAR */}
       <aside className="w-[15%] md:w-[12%] lg:w-[16%] xl:w-[14%] bg-white border-r border-gray-200 flex flex-col shadow-sm">
         {/* Logo */}
-        <div className="p-4 sticky top-0 bg-white z-20 flex items-center justify-center lg:justify-start gap-2">
-          <Link href="/" className="flex items-center gap-2">
-            <Image
-              src="/smartbiddaloy.png"
-              alt="logo"
-              width={48}
-              height={48}
-              className="object-contain"
-            />
-            <span className="hidden lg:block font-bold text-gray-800 text-lg">
-              Smart Biddaloy
-            </span>
-          </Link>
-        </div>
+         <div className="p-4 sticky top-0 bg-white z-20 flex justify-center">
+                 <Link
+                   href="/"
+                   className="flex flex-col items-center gap-2 lg:gap-3"
+                 >
+                   <Image
+                     src="/logo.png"
+                     alt="logo"
+                     width={48}
+                     height={48}
+                     className="object-contain"
+                   />
+       
+                   {/* School Name - only show on large & medium */}
+                   <span className="hidden lg:block text-center font-bold text-gray-800 text-sm lg:text-lg">
+                     Barenda F.chan academy
+                   </span>
+                 </Link>
+               </div>
 
         {/* Menu */}
         <div className="flex-1 overflow-y-auto px-2 pb-8 pt-0 custom-scrollbar">
@@ -67,9 +73,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* MAIN CONTENT */}
+       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-y-auto">
-        <Navbar />
-        <div className="px-4 py-4 sm:px-6 sm:py-6 md:px-10 md:py-8">{children}</div>
+             {/* Sticky Navbar */}
+              <div className="sticky top-0 z-30 bg-white">
+                <Navbar />
+              </div>
+      
+              {/* Page Content */}
+              <div className="px-4 py-4 sm:px-6 md:px-10">
+                {children}
+              </div>
       </main>
     </div>
   );

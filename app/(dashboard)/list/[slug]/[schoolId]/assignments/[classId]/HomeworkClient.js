@@ -14,7 +14,7 @@ const columns = [
   { header: "Actions", accessor: "action" },
 ];
 
-export default function HomeworkClient({ initialHomework, schoolId, classId }) {
+export default function HomeworkClient({ initialHomework, schoolId, classId,className,sectionName }) {
   const [homework, setHomework] = useState(initialHomework || []);
   const [loadingDelete, setLoadingDelete] = useState(null);
 
@@ -43,7 +43,11 @@ export default function HomeworkClient({ initialHomework, schoolId, classId }) {
   const renderRow = (item) => (
     <tr key={item._id} className="border-b border-gray-200 even:bg-gray-50 hover:bg-gray-100 transition">
       <td className="px-4 py-3 font-medium">{item.title}</td>
-      <td className="px-4 py-3 hidden md:table-cell">{item.description}</td>
+      <td className="px-4 py-3 hidden md:table-cell">
+        {item.description?.length > 90
+          ? item.description.slice(0, 90) + "..."
+          : item.description}
+      </td>
       <td className="px-4 py-3 hidden lg:table-cell">{new Date(item.dueDate).toLocaleDateString()}</td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">
@@ -75,13 +79,11 @@ export default function HomeworkClient({ initialHomework, schoolId, classId }) {
     <div className="bg-white p-6 rounded-xl shadow-md m-4">
       {/* Header */}
       <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">All Homework</h1>
+        <h1 className="text-2xl font-bold text-gray-900">All Homework of - ({className}{sectionName})</h1>
         <div className="flex items-center gap-3 w-full md:w-auto">
            
           <FormModal schoolId={schoolId} classId={classId} table="homework" type="create" onSuccess={(newHomework) => setHomework((prev) => [newHomework, ...prev])}/>
-           <div className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white font-semibold rounded-lg ">
-             Add Teacher
-           </div>
+          
         </div>
       </div>
 

@@ -8,16 +8,19 @@ import Table from "@/app/components/Table";
 import TableSearch from "@/app/components/TableSearch";
 import { TrashIcon, EyeIcon, PlusIcon } from "@heroicons/react/24/solid";
 import FormUpdateModal from "@/app/components/FormUpdateModal";
+import { CloudUploadIcon, UploadIcon } from "lucide-react";
+import ResultModal from "@/app/components/ResultModal";
 
 const columns = [
   { header: "Name", accessor: "name" },
   { header: "Roll", accessor: "roll" },
   { header: "Class", accessor: "className" },
   { header: "Section", accessor: "section" },
+  { header: "Actions", accessor: "action" },
 
 ];
 
-export default function StudentListClient({ students, schoolId, classId, slug }) {
+export default function StudentListClient({ students, schoolId, classId,className,sectionName, slug }) {
   const [studentData, setStudentData] = useState(students);
   const [loadingDelete, setLoadingDelete] = useState(null);
 
@@ -34,19 +37,12 @@ export default function StudentListClient({ students, schoolId, classId, slug })
       <td className="py-3 px-4 text-gray-600">{item.section || "N/A"}</td>
       <td className="py-3 px-4">
         <div className="flex items-center gap-2">
-          <Link href={`/list/${slug}/${schoolId}/results/${item._id}`}>
-            <button className="flex items-center justify-center w-9 h-9 rounded-full bg-blue-500 hover:bg-blue-600 text-white transition shadow-md">
-              <EyeIcon className="w-4 h-4" />
-            </button>
-          </Link>
-           <Link href={`/list/${slug}/${schoolId}/results/${item._id}/upload`}>
-            <button className="flex items-center justify-center w-9 h-9 rounded-full bg-blue-500 hover:bg-blue-600 text-white transition shadow-md">
-              <EyeIcon className="w-4 h-4" />
-            </button>
-          </Link>
-        
- 
+  
 
+          <ResultModal schoolId={schoolId} studentId={item._id} table="result" type="view" />
+    
+          <ResultModal schoolId={schoolId} studentId={item._id} table="result" type="create" />
+ 
         </div>
       </td>
     </tr>
@@ -54,15 +50,11 @@ export default function StudentListClient({ students, schoolId, classId, slug })
 
   return (
     <div className="p-6 bg-white rounded-2xl shadow-lg">
+      
+      
       {/* Header */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
         <TableSearch />
-        <div className="flex items-center gap-3">
-          <FormModal schoolId={schoolId} table="student" type="create" />
-          <button className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-md transition">
-            <PlusIcon className="w-4 h-4" /> Add Student
-          </button>
-        </div>
       </div>
 
       {/* Table */}
