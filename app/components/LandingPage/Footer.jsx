@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   FaFacebookF,
   FaYoutube,
@@ -12,12 +13,21 @@ import {
 
 export default function Footer() {
   return (
-    <footer className="bg-gradient-to-tr from-blue-500  to-blue-600 text-gray-200">
+    <footer className="bg-gradient-to-tr from-blue-700  to-blue-900 text-gray-200">
       {/* Top Footer */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 py-16 grid grid-cols-1 md:grid-cols-4 gap-10">
 
         {/* School Info */}
         <div>
+         <div className=" justify-center flex mb-4">
+                <Image
+                  src="/logo.png"
+                  alt="Logo"
+                  width={80}
+                  height={80}
+                  className=" object-contain"
+                />
+              </div>
           <h2 className="text-xl sm:text-2xl md:text-2xl lg:text-3xl font-bold text-white mb-4 leading-snug">
             বারেন্ডা এফ. চান একাডেমী
           </h2>

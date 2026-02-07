@@ -7,29 +7,30 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-interface SchoolData {
-  schoolId: string;
-  name?: string;
-  [key: string]: any;
-}
-
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function Layout({ children }) {
   const params = useParams();
   const router = useRouter();
-  const [schoolData, setSchoolData] = useState<SchoolData | null>(null);
+  const [schoolData, setSchoolData] = useState(null);
 
   // Handle slug if array
-  const slug = Array.isArray(params?.slug) ? params.slug[0] : params?.slug ?? "";
+  const slug = Array.isArray(params?.slug)
+    ? params.slug[0]
+    : params?.slug ?? "";
+
   const schoolId = schoolData?.schoolId ?? "";
+
   useEffect(() => {
     const stored = localStorage.getItem("schoolDetails");
+
     if (stored) {
       try {
-        const school: SchoolData = JSON.parse(stored);
+        const school = JSON.parse(stored);
+
         if (!school.schoolId) {
           router.push("/sign-in-as-admin");
           return;
         }
+
         setSchoolData(school);
       } catch (err) {
         console.error("Failed to parse schoolDetails from localStorage", err);
@@ -69,7 +70,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {/* MAIN CONTENT */}
       <main className="flex-1 flex flex-col overflow-y-auto">
         <Navbar />
-        <div className="px-4 py-4 sm:px-6 sm:py-6 md:px-10 md:py-8">{children}</div>
+        <div className="px-4 py-4 sm:px-6 sm:py-6 md:px-10 md:py-8">
+          {children}
+        </div>
       </main>
     </div>
   );

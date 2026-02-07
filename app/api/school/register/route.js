@@ -4,9 +4,7 @@ import nodemailer from "nodemailer";
 
 // Allowed Client IDs
 const validClientIds = new Set([
-  "SCH001","SCH002","SCH003","SCH004","SCH005","SCH006","SCH007","SCH008",
-  "SCH009","SCH010","SCH011","SCH012","SCH013","SCH014","SCH015","SCH016",
-  "SCH017","SCH018"
+  "SCH001"
 ]);
 
 // 🔹 Slug generator (Bangla + English supported)
@@ -53,7 +51,6 @@ export async function POST(req) {
       );
     }
 
-    // ✅ Client ID validation
     if (!validClientIds.has(clientId)) {
       return new Response(
         JSON.stringify({ success: false, message: "অবৈধ Client ID" }),

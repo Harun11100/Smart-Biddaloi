@@ -137,16 +137,9 @@ const TeacherListPage = () => {
         <h1 className="text-2xl font-bold text-gray-900">All Teachers</h1>
         <div className="flex items-center gap-3 w-full md:w-auto">
           <TableSearch />
-          {/* <button className="w-10 h-10 flex items-center justify-center rounded-full bg-yellow-200 hover:bg-yellow-300 transition">
-            <Image src="/filter.png" alt="Filter" width={16} height={16} />
-          </button>
-          <button className="w-10 h-10 flex items-center justify-center rounded-full bg-yellow-200 hover:bg-yellow-300 transition">
-            <Image src="/sort.png" alt="Sort" width={16} height={16} />
-          </button> */}
-         
+
           <FormModal schoolId={schoolId} table="teacher" type="create"/>
-           
-     
+
         </div>
       </div>
 

@@ -70,7 +70,7 @@ export default function Facilities() {
     >
       {/* Heading */}
       <div className="text-center mb-14">
-        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-blue-900">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold text-blue-900">
           আমাদের সুবিধাসমূহ
         </h2>
         <p className="mt-4 text-gray-600 text-sm sm:text-base md:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed">

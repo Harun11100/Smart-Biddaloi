@@ -61,7 +61,7 @@ export default function Navbar() {
       {/* Logo */}
       <div className="flex-shrink-0">
         <Image
-          src="/schoolicon.png"
+          src="/logo.png"
           alt="Logo"
           width={40}
           height={40}

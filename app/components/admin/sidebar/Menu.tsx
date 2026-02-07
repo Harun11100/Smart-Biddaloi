@@ -74,12 +74,6 @@ const Menu: React.FC<MenuProps> = ({ slug ,schoolId }) => {
           href: slug ? `/list/${slug}/${schoolId}/attendance` : "#",
           visible: ["admin", "teacher", "student", "parent"],
         },
-        // {
-        //   icon: "/calendar.png",
-        //   label: "Events",
-        //   href: slug ? `/list/${slug}/${schoolId}/events` : "#",
-        //   visible: ["admin", "teacher", "student", "parent"],
-        // },
         {
           icon: "/announcement.png",
           label: "Notices",
