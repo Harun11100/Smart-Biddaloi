@@ -5,13 +5,16 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { MdSchool, MdAdminPanelSettings } from "react-icons/md";
 import { motion } from "framer-motion";
+import Navbar from "../components/LandingPage/Navbar";
 
 export default function AccountsPage() {
   const router = useRouter();
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#eef4ff] to-[#ffffff] overflow-hidden p-4">
-
+       <div>
+        {/* <Navbar/> */}
+       </div>
       {/* Background floating shapes */}
       <div className="absolute w-72 h-72 bg-[#dbe7ff] rounded-full blur-3xl opacity-40 top-10 left-[-80px]" />
       <div className="absolute w-72 h-72 bg-[#ffe4f3] rounded-full blur-3xl opacity-40 bottom-10 right-[-80px]" />

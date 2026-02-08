@@ -103,7 +103,7 @@ export default function Footer() {
             className="flex items-center gap-2 text-white hover:text-blue-200 transition-all duration-300 group"
           >
             <FaUserShield className="text-blue-400 group-hover:scale-110 transition-transform duration-300" />
-            <span className="tracking-wide">Management Login</span>
+            <span className="tracking-wide">Admin Login</span>
           </a>
         </div>
       </div>
