@@ -31,8 +31,6 @@ export default function FeeCollection({
     day: "numeric",
   });
 
-  /* ---------------- Load Cache (fallback only) ---------------- */
-
   useEffect(() => {
     if (studentData.length) {
       setLoading(false);
@@ -172,7 +170,6 @@ export default function FeeCollection({
     </div>
   </div>
 
-  {/* Filters */}
   <div className="flex w-full gap-2 overflow-x-auto pb-1">
     {[
       { key: "all", label: "All" },
