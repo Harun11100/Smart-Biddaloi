@@ -31,7 +31,7 @@ const TeacherListPage = () => {
   const [teacherData, setTeacherData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingDelete, setLoadingDelete] = useState(null);
-  console.log("Teachers data **************:",teacherData)
+  
   useEffect(() => {
     const stored = localStorage.getItem("schoolDetails");
     if (stored) {
