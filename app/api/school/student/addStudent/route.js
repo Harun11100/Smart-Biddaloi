@@ -94,7 +94,7 @@ export async function POST(req) {
       classId,
       bloodGroup: bloodGroup || "",
       remarks: remarks || "",
-      dateOfBirth,
+      dateOfBirth ,
       totalDueAmount: totalMonthlyFees,
       totalPaidAmount: 0,
       monthlyAbsent: 0,
