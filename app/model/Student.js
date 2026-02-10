@@ -8,7 +8,7 @@ const StudentSchema = new mongoose.Schema(
     grade: { type: String },
     section: { type: String },
     gender: { type: String, required: true },
-    dateOfBirth: { type: Date },
+    dateOfBirth: { type: String },
     guardianName: { type: String },
     guardianPhone: { type: String, required: true },
     bloodGroup: { type: String },
