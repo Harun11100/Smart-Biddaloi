@@ -35,10 +35,7 @@ const Navbar = () => {
         <Image src="/logout.png" alt="logout" width={20} height={20} />
       </button>
      </div>
-        <div className="relative bg-gray-100 p-2 rounded-full hover:bg-gray-200 cursor-pointer transition">
-          <Image src="/setting.png" alt="setting" width={20} height={20} />
-        </div>
-
+        
         <div className="hidden sm:flex flex-col text-right leading-tight">
           <span className="text-sm font-semibold text-gray-800">Md Harun Or Rashid</span>
           <span className="text-[11px] text-gray-500">Admin</span>

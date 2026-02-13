@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
+import RollFilter from "@/app/components/RollFilter";
 
 export default function StudentListAttendance({
   schoolId,
@@ -10,12 +11,13 @@ export default function StudentListAttendance({
   sectionName,
 }) {
   const [students, setStudents] = useState([]);
+  const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [attendanceTaken, setAttendanceTaken] = useState(false);
+  const [rollQuery, setRollQuery] = useState("");
 
   const STORAGE_KEY = `students_${classId}`;
-
   const today = new Date();
   const formattedDate = today
     .toLocaleDateString("en-GB")
@@ -61,6 +63,7 @@ export default function StudentListAttendance({
     );
     const data = res.data.data.map(normalizeStudent);
     setStudents(data);
+    setFiltered(data);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   };
 
@@ -68,6 +71,7 @@ export default function StudentListAttendance({
     if (schoolId && classId) checkTodayAttendance();
   }, [schoolId, classId]);
 
+  // Toggle student attendance
   const toggleStatus = (id) => {
     const updated = students.map((s) =>
       s._id === id
@@ -78,6 +82,7 @@ export default function StudentListAttendance({
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   };
 
+  // Save attendance
   const saveAttendance = async () => {
     setSaving(true);
     try {
@@ -106,6 +111,17 @@ export default function StudentListAttendance({
     }
   };
 
+  // Filter students by roll
+  useEffect(() => {
+    if (!rollQuery.trim()) {
+      setFiltered(students);
+    } else {
+      setFiltered(
+        students.filter((s) => String(s.roll).includes(rollQuery.trim()))
+      );
+    }
+  }, [rollQuery, students]);
+
   const displayDate = today.toLocaleDateString("en-US", {
     weekday: "long",
     day: "2-digit",
@@ -132,9 +148,18 @@ export default function StudentListAttendance({
           Class: {className || "N/A"} | Section: {sectionName || "N/A"}
         </p>
         <p className="text-gray-500 text-sm mt-1">{displayDate}</p>
-        <p className="text-gray-600 mt-2">
-          Total Students: {students.length}
-        </p>
+       
+      </div>
+
+      {/* Roll Filter */}
+      <div className="mb-4 flex justify-between">
+        <RollFilter
+          value={rollQuery}
+          onChange={setRollQuery}
+          placeholder="Filter by Roll"
+          className="w-40"
+        />
+         <p className="text-gray-600 mt-2">Total Students: {students.length}</p>
       </div>
 
       {/* Table */}
@@ -158,14 +183,12 @@ export default function StudentListAttendance({
           </thead>
 
           <tbody>
-            {students.map((s) => (
+            {filtered.map((s) => (
               <tr
                 key={s._id}
                 className="border-b hover:bg-gray-50 transition-colors"
               >
-                <td className="py-3 px-4 font-medium text-gray-800">
-                  {s.name}
-                </td>
+                <td className="py-3 px-4 font-medium text-gray-800">{s.name}</td>
                 <td className="py-3 px-4 text-gray-600">{s.roll}</td>
 
                 <td className="py-3 px-4">
