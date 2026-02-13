@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { TrashIcon, EyeIcon } from "@heroicons/react/24/solid";
 import FormModal from "@/app/components/FormModal";
-import Table from "@/app/components/Table";
-import TableSearch from "@/app/components/TableSearch";
-import { TrashIcon, EyeIcon, PlusIcon } from "@heroicons/react/24/solid";
 import FormUpdateModal from "@/app/components/FormUpdateModal";
+import RollFilter from "@/app/components/RollFilter";
+import Table from "@/app/components/Table";
+import { filterStudentsByRollAndStatus } from "@/app/utils/filterStudents";
 
 const columns = [
   { header: "Name", accessor: "name" },
@@ -17,17 +17,39 @@ const columns = [
   { header: "Actions", accessor: "action" },
 ];
 
-export default function StudentListClient({ students, schoolId, classId,className,sectionName, slug }) {
+export default function StudentListClient({
+  students,
+  schoolId,
+  classId,
+  className,
+  sectionName,
+  slug,
+}) {
   const [studentData, setStudentData] = useState(students);
+  const [filtered, setFiltered] = useState(students);
+  const [rollQuery, setRollQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("all");
   const [loadingDelete, setLoadingDelete] = useState(null);
 
-  
+  // Apply filtering whenever students, rollQuery, or activeFilter changes
+  useEffect(() => {
+    const result = filterStudentsByRollAndStatus({
+      students: studentData,
+      rollQuery,
+      status: activeFilter,
+    });
+    setFiltered(result);
+  }, [studentData, rollQuery, activeFilter]);
+
+  // Delete student
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this student?")) return;
 
     setLoadingDelete(id);
     try {
-      const res = await fetch(`/api/school/deleteStudent/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/school/student/deleteStudent/${id}`, {
+        method: "DELETE",
+      });
       const data = await res.json();
 
       if (data.success) {
@@ -43,6 +65,7 @@ export default function StudentListClient({ students, schoolId, classId,classNam
     }
   };
 
+  // Render table row
   const renderRow = (item) => (
     <tr
       key={item._id}
@@ -80,34 +103,44 @@ export default function StudentListClient({ students, schoolId, classId,classNam
 
   return (
     <div className="p-6 bg-white rounded-2xl shadow-lg">
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">
-        Student List
-      </h1>
-      <p className="text-gray-600 mb-6">
-         Class: {className || "N/A"} | Section: {sectionName || "N/A"}
-      </p>
-      <p className="text-gray-600 mb-6">
-        Total Students: {studentData.length}
-      </p>
-
-
-    </div>
       {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Student List</h1>
+        <p className="text-gray-600 mb-1">
+          Class: {className || "N/A"} | Section: {sectionName || "N/A"}
+        </p>
+        <p className="text-gray-600 mb-4">Total Students: {studentData.length}</p>
+      </div>
+
+      {/* Filters */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-        <TableSearch />
+        <div className="flex items-center gap-2">
+          <RollFilter value={rollQuery} onChange={setRollQuery} className="w-40" />
+          <div className="flex gap-2">
+            {["all", "paid", "unpaid"].map((status) => (
+              <button
+                key={status}
+                onClick={() => setActiveFilter(status)}
+                className={`whitespace-nowrap rounded-lg px-4 py-1.5 text-sm font-semibold transition ${
+                  activeFilter === status
+                    ? "bg-blue-500 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="flex items-center gap-3">
           <p>Add Student</p>
           <FormModal schoolId={schoolId} table="student" type="create" />
-          
         </div>
       </div>
 
       {/* Table */}
-      <Table columns={columns} renderRow={renderRow} data={studentData} />
-
-      {/* Pagination Placeholder */}
-      {/* <Pagination /> */}
+      <Table columns={columns} renderRow={renderRow} data={filtered} />
     </div>
   );
 }

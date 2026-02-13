@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import TableSearch from "@/app/components/TableSearch";
+import RollFilter from "@/app/components/RollFilter";
+import { filterStudentsByRollAndStatus } from "@/app/utils/filterStudents";
 
 export default function FeeCollection({
   studentData = [],
@@ -11,8 +13,9 @@ export default function FeeCollection({
   classId,
   className,
   sectionName,
+  slug
 }) {
-  console.log("Received student data:", studentData);
+
 
   const router = useRouter();
   const STORAGE_KEY = `students_${classId}`;
@@ -21,6 +24,7 @@ export default function FeeCollection({
   const [filtered, setFiltered] = useState(studentData);
   const [activeFilter, setActiveFilter] = useState("all");
   const [loading, setLoading] = useState(!studentData.length);
+  const [rollQuery, setRollQuery] = useState("");
 
   /* ---------------- Date ---------------- */
 
@@ -30,6 +34,25 @@ export default function FeeCollection({
     month: "long",
     day: "numeric",
   });
+
+  useEffect(() => {
+  const result = filterStudentsByRollAndStatus({
+    students,
+    rollQuery,
+    status: activeFilter,
+  });
+
+  setFiltered(result);
+}, [students, activeFilter, rollQuery]);
+
+useEffect(() => {
+  if (activeFilter === "all") {
+    setFiltered(students);
+  } else {
+    setFiltered(students.filter((s) => s.paymentStatus === activeFilter));
+  }
+}, [students, activeFilter]);
+
 
   useEffect(() => {
     if (studentData.length) {
@@ -164,13 +187,17 @@ export default function FeeCollection({
         )}
       </p>
     </div>
-         <TableSearch />
+
+  <div className="flex items-center gap-2">
+
+  </div>
+
     <div className="rounded-lg bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-600">
       {formattedDate}
     </div>
   </div>
 
-  <div className="flex w-full gap-2 overflow-x-auto pb-1">
+  <div className="flex w-full gap-2 overflow-x-auto pb-1 mt-1 pt-2">
     {[
       { key: "all", label: "All" },
       { key: "paid", label: "Paid" },
@@ -189,6 +216,15 @@ export default function FeeCollection({
         {f.label}
       </button>
     ))}
+    <div className="flex items-center gap-2">
+  <RollFilter
+  value={rollQuery}
+  onChange={setRollQuery}
+  className="w-40"
+/>
+
+  
+  </div>
   </div>
 </div>
 
@@ -205,7 +241,7 @@ export default function FeeCollection({
       key={item._id}
       onClick={() =>
         router.push(
-          `/student-payment-history?schoolId=${schoolId}&classId=${classId}&studentId=${item._id}`
+          `/list/${slug}/${schoolId}/payments/studentList/${classId}/payment-history?studentId=${item._id}`
         )
       }
       className="group cursor-pointer rounded-xl border border-gray-100 

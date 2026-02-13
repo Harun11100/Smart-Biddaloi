@@ -21,6 +21,7 @@ const teacherSchema = new mongoose.Schema(
     nid: { type: String },
     address: { type: String },
     bloodGroup: { type: String },
+    experience:{type:String, default:4},
     
     phone: {
       type: String,
