@@ -4,8 +4,7 @@ import bcrypt from "bcryptjs";
 const teacherSchema = new mongoose.Schema(
   {
     classTeacher: { type: String },
-
-    // Normalize and validate email
+    
     email: {
       type: String,
       required: true,
@@ -21,8 +20,8 @@ const teacherSchema = new mongoose.Schema(
     nid: { type: String },
     address: { type: String },
     bloodGroup: { type: String },
-    experience:{type:String, default:4},
-    
+    experience:{type:String, default:3},
+    imageUrl: { type: String, default:null },
     phone: {
       type: String,
       required: true,
@@ -83,6 +82,8 @@ teacherSchema.methods.comparePassword = async function (candidatePassword) {
 };
 
 // 🧱 Model export (reuse existing model if already compiled)
+
+delete mongoose.models.Teacher;
 const Teacher =
   mongoose.models.Teacher || mongoose.model("Teacher", teacherSchema);
 

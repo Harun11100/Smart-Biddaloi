@@ -11,15 +11,16 @@ export async function POST(req) {
       name,
       code,
       schoolId,
+      classId,
       creditHours,
       maxMarks,
       passingMarks,
     } = body;
 
     // 🔴 Validation
-    if (!name || !code || !schoolId) {
+    if (!name || !code || !schoolId || !classId) {
       return NextResponse.json(
-        { success: false, message: "Name, Code and School ID are required" },
+        { success: false, message: "Name, Code, School ID and Class ID are required" },
         { status: 400 }
       );
     }
@@ -28,6 +29,7 @@ export async function POST(req) {
     const existing = await Subject.findOne({
       code: code.toUpperCase(),
       schoolId,
+      classId,
     });
 
     if (existing) {
@@ -42,6 +44,7 @@ export async function POST(req) {
       name: name.trim(),
       code: code.toUpperCase().trim(),
       schoolId,
+      classId,
       creditHours:Number(creditHours),
       maxMarks:Number(maxMarks),
       passingMarks:Number(passingMarks),

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-export default function SubjectForm({ type, data, schoolId, onSuccess }) {
+export default function SubjectForm({ type, data, schoolId, onSuccess,classId }) {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [creditHours, setCreditHours] = useState(0);
@@ -35,6 +35,7 @@ export default function SubjectForm({ type, data, schoolId, onSuccess }) {
       if (type === "create") {
         response = await axios.post("/api/school/subject/createSubject", {
           schoolId,
+          classId,
           name,
           code,
           creditHours,
@@ -44,6 +45,7 @@ export default function SubjectForm({ type, data, schoolId, onSuccess }) {
       } else if (type === "update") {
         response = await axios.put("/api/school/subject/updateSubject", {
           subjectId: data._id,
+          classId,
           name,
           code,
           creditHours,

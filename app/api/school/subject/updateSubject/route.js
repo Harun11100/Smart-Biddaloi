@@ -7,7 +7,7 @@ export async function PUT(req) {
     await connectDb();
 
     const body = await req.json();
-    const { subjectId, name, code, creditHours, maxMarks, passingMarks } = body;
+    const { subjectId, name, code, creditHours, maxMarks, passingMarks, classId } = body;
 
     if (!subjectId) {
       return NextResponse.json(
