@@ -25,21 +25,6 @@ export async function POST(req) {
       );
     }
 
-    // 🔴 Check duplicate subject code in same school
-    const existing = await Subject.findOne({
-      code: code.toUpperCase(),
-      schoolId,
-      classId,
-    });
-
-    if (existing) {
-      return NextResponse.json(
-        { success: false, message: "Subject code already exists" },
-        { status: 409 }
-      );
-    }
-
-    // ✅ Create subject
     const subject = await Subject.create({
       name: name.trim(),
       code: code.toUpperCase().trim(),
