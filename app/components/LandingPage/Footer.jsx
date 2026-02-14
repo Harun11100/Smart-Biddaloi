@@ -51,7 +51,7 @@ export default function Footer() {
             <FooterLink href="#academics" label="একাডেমিক" />
             <FooterLink href="#facilities" label="সুবিধাসমূহ" />
             <FooterLink href="#teachers" label="শিক্ষকবৃন্দ" />
-            <FooterLink href="#contact" label="যোগাযোগ" />
+           
           </ul>
         </div>
 

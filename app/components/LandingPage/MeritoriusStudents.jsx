@@ -75,7 +75,7 @@ export default function MeritoriousStudentsStatic() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-3xl font-extrabold text-blue-900">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold text-blue-900">
             কৃতি শিক্ষার্থীবৃন্দ
           </h2>
           <p className="text-gray-600 mt-2 text-sm sm:text-base max-w-2xl mx-auto">
@@ -108,7 +108,7 @@ export default function MeritoriousStudentsStatic() {
                 {/* Content */}
                 <div className="relative z-10 flex flex-col items-center">
                   {/* Larger Avatar */}
-                  <div className="w-60 h-40 rounded-xl ring-6 ring-white shadow overflow-hidden mb-3">
+                  <div className="w-70 h-40 rounded-xl ring-6 ring-white shadow overflow-hidden mb-3">
                     <img
                       src={imageUrl}
                       alt={achieve.studentName || "Student"}
