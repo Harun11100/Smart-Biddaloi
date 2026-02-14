@@ -6,19 +6,18 @@ export async function GET(req) {
   try {
     await connectDb();
 
-    // Get schoolId from query parameters
+    // Get classId from query parameters
     const { searchParams } = new URL(req.url);
-    const schoolId = searchParams.get("schoolId");
+    const classId = searchParams.get("classId");
 
-    if (!schoolId) {
+    if (!classId) {
       return NextResponse.json(
-        { success: false, message: "School ID is required" },
+        { success: false, message: "Class ID is required" },
         { status: 400 }
       );
     }
-
-    // Find all subjects for this school
-    const subjects = await Subject.find({ schoolId });
+    
+    const subjects = await Subject.find({ classId });
 
     return NextResponse.json({
       success: true,
