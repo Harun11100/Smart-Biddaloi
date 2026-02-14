@@ -40,7 +40,7 @@ export default function Navbar() {
     { name: "হোম", href: "#home" },
     { name: "একাডেমিক", href: "#academics" },
     { name: "সুবিধাসমূহ", href: "#facilities" },
-    { name: "ছাত্রছাত্রীরা", href: "#meritorious" },
+    { name: "কৃতি শিক্ষার্থীবৃন্দ", href: "#meritorious" },
     { name: "শিক্ষকবৃন্দ", href: "#teachers" },
     { name: "আমাদের সম্পর্কে", href: "#about" },
    
