@@ -75,7 +75,7 @@ export default function MeritoriousStudentsStatic() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-blue-900">
+          <h2 className="text-3xl sm:text-3xl font-extrabold text-blue-900">
             কৃতি শিক্ষার্থীবৃন্দ
           </h2>
           <p className="text-gray-600 mt-2 text-sm sm:text-base max-w-2xl mx-auto">
