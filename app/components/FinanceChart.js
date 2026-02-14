@@ -30,18 +30,17 @@ const data = [
 const FinanceChart = () => {
   return (
     <div className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-2xl w-full h-full p-6 shadow-sm">
-
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-semibold text-gray-800 tracking-tight">
           Monthly Payment Summary
         </h1>
-        <Image 
-          src="/moreDark.png" 
-          alt="menu" 
-          width={20} 
+        <Image
+          src="/moreDark.png"
+          alt="menu"
+          width={20}
           height={20}
-          className="opacity-70 hover:opacity-100 transition" 
+          className="opacity-70 hover:opacity-100 transition"
         />
       </div>
 
@@ -51,7 +50,11 @@ const FinanceChart = () => {
           data={data}
           margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
         >
-          <CartesianGrid strokeDasharray="4 4" stroke="#e5e7eb" vertical={false} />
+          <CartesianGrid
+            strokeDasharray="4 4"
+            stroke="#e5e7eb"
+            vertical={false}
+          />
 
           <XAxis
             dataKey="name"
