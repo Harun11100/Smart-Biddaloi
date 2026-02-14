@@ -16,7 +16,7 @@ const columns = [
   { header: "Actions", accessor: "action" },
 ];
 
-export default function SubjectListClient({ subjects, schoolId }) {
+export default function SubjectListClient({ subjects, schoolId,classId,className }) {
   const [subjectList, setSubjectList] = useState(subjects);
   const [loadingDelete, setLoadingDelete] = useState(null);
 
@@ -92,24 +92,19 @@ export default function SubjectListClient({ subjects, schoolId }) {
       {/* Header */}
       <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
         <h1 className="text-xl md:text-2xl font-bold text-gray-800">
-          Subjects Overview
+          Subjects for {className || "Unknown"}
         </h1>
 
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
           <TableSearch />
 
           <div className="flex items-center gap-3">
-            {/* <button className="w-10 h-10 flex items-center justify-center rounded-full bg-yellow-400 hover:bg-yellow-500 transition">
-              <Image src="/filter.png" alt="Filter" width={16} height={16} />
-            </button>
-            <button className="w-10 h-10 flex items-center justify-center rounded-full bg-yellow-400 hover:bg-yellow-500 transition">
-              <Image src="/sort.png" alt="Sort" width={16} height={16} />
-            </button> */}
 
             <FormModal
               table="subject"
               type="create"
               schoolId={schoolId}
+              classId={classId}
               onSuccess={(newSubject) =>
                 setSubjectList((prev) => [newSubject, ...prev])
               }

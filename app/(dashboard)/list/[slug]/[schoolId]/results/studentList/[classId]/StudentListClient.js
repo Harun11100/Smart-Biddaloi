@@ -53,7 +53,7 @@ export default function StudentListClient({
       <td className="py-3 px-4">
         <div className="flex items-center gap-2">
           <ResultModal schoolId={schoolId} studentId={item._id} table="result" type="view" />
-          <ResultModal schoolId={schoolId} studentId={item._id} table="result" type="create" />
+          <ResultModal schoolId={schoolId} studentId={item._id} table="result" type="create" classId={classId} />
         </div>
       </td>
     </tr>
@@ -61,7 +61,19 @@ export default function StudentListClient({
 
   return (
     <div className="p-6 bg-white rounded-2xl shadow-lg">
+
+
       {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Students in {className} {sectionName || ""}
+        </h1>
+        <p className="text-gray-600 mt-1">
+          Total Students: {studentData.length}
+        </p>
+      </div>
+
+
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
         <RollFilter
           value={rollQuery}

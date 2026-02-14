@@ -38,6 +38,7 @@ const ResultModal = ({ table, schoolId, type, onSuccess, studentId, classId }) =
           <ResultUploadForm
             type={type}
             schoolId={schoolId}
+            classId={classId}
             studentId={studentId}
             onSuccess={onSuccess}
           />
@@ -92,7 +93,7 @@ const ResultModal = ({ table, schoolId, type, onSuccess, studentId, classId }) =
               className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8"
             >
               {/* Modal container */}
-              <div className="relative w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden h-[90vh] sm:h-[85vh] md:h-[90vh] lg:h-[95vh]">
+              <div className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden h-[90vh] sm:h-[85vh] md:h-[90vh] lg:h-[95vh]">
                 {/* Close button */}
                 <button
                   onClick={() => setOpen(false)}

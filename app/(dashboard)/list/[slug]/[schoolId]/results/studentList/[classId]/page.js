@@ -18,7 +18,7 @@ export default async function StudentListPage({ params }) {
     )
     .lean();
 
-  const classData= await Class.findById(classId).select("className sectionName").lean();  
+  const classData= await Class.findById(classId).select().lean();  
 
   // Convert MongoDB ObjectId to string
   const serializableStudents = students.map((std) => ({

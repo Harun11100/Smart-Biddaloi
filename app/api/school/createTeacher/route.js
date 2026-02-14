@@ -9,15 +9,18 @@ export async function POST(req) {
     await connectDb();
 
     const body = await req.json();
+    console.log("Received teacher creation request:", body)
     const {
       classTeacher = "",
       email,
+      experience = "",
       name,
       password,
       phone,
       role,
       schoolId,
       subjects = [],
+      imageUrl = null,
       gender = "male",
       address = "",
       bloodGroup = "",
@@ -25,7 +28,7 @@ export async function POST(req) {
       userName = "",
     } = body;
 
-    if (!email || !name || !password || !phone || !schoolId || !role) {
+    if (!email || !name || !password || !phone || !schoolId || !role ) {
       return NextResponse.json(
         { success: false, message: "সব প্রয়োজনীয় তথ্য প্রদান করুন।" },
         { status: 400 }
@@ -48,6 +51,8 @@ export async function POST(req) {
       password,
       phone,
       role,
+      experience,
+      imageUrl,
       schoolId,
       subjects,
       gender,
@@ -67,6 +72,8 @@ export async function POST(req) {
       email: newTeacher.email,
       phone: newTeacher.phone,
       role: newTeacher.role,
+      experience: newTeacher.experience,
+      imageUrl: newTeacher.imageUrl,
       schoolId: newTeacher.schoolId,
       classTeacher: newTeacher.classTeacher,
       subjects: newTeacher.subjects,

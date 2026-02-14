@@ -1,7 +1,12 @@
 import mongoose from "mongoose";
 
 const SubjectSchema = new mongoose.Schema(
-  {
+  { 
+    classId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Class",
+      required: true,
+    },
     name: {
       type: String,
       required: true,
@@ -33,5 +38,7 @@ const SubjectSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+delete mongoose.models.Subject;
 
 export default mongoose.models.Subject || mongoose.model("Subject", SubjectSchema);

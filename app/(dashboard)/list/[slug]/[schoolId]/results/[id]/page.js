@@ -13,7 +13,7 @@ export default function StudentResultView() {
   const [results, setResults] = useState([]);
   const [deleteLoadingIds, setDeleteLoadingIds] = useState([]);
   
-  console.log("StudentResultView params:", { schoolId, studentId });
+
   // Fetch results
   const fetchStudentResults = async (type) => {
     if (!type || !schoolId || !studentId) return;

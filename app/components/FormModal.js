@@ -86,6 +86,7 @@ const FormModal = ({ table, schoolId, type, data, onSuccess ,studentId, classId}
                     type={type}
                     data={data}
                     schoolId={schoolId}
+                    classId={classId}
                   />
                 )}
                 {table === "notice" && (type === "create" || type === "update") && (
