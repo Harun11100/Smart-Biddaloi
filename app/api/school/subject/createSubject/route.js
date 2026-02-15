@@ -18,31 +18,16 @@ export async function POST(req) {
     } = body;
 
     // 🔴 Validation
-    if (!name || !code || !schoolId || !classId) {
+    if (!name || !schoolId || !classId) {
       return NextResponse.json(
         { success: false, message: "Name, Code, School ID and Class ID are required" },
         { status: 400 }
       );
     }
 
-    // 🔴 Check duplicate subject code in same school
-    const existing = await Subject.findOne({
-      code: code.toUpperCase(),
-      schoolId,
-      classId,
-    });
-
-    if (existing) {
-      return NextResponse.json(
-        { success: false, message: "Subject code already exists" },
-        { status: 409 }
-      );
-    }
-
-    // ✅ Create subject
     const subject = await Subject.create({
       name: name.trim(),
-      code: code.toUpperCase().trim(),
+      code: code.trim(),
       schoolId,
       classId,
       creditHours:Number(creditHours),
