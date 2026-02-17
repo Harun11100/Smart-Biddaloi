@@ -51,6 +51,8 @@ export async function GET(req) {
         { status: 404 }
       );
     }
+
+    
     
     return new Response(JSON.stringify({ success: true, school }), { status: 200 });
 

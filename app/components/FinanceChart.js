@@ -12,22 +12,22 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const data = [
-  { name: "Jan", received: 12000, due: 3000 },
-  { name: "Feb", received: 15000, due: 2000 },
-  { name: "Mar", received: 17000, due: 2500 },
-  { name: "Apr", received: 16000, due: 4000 },
-  { name: "May", received: 18000, due: 3500 },
-  { name: "Jun", received: 19000, due: 3000 },
-  { name: "Jul", received: 20000, due: 3200 },
-  { name: "Aug", received: 21000, due: 2900 },
-  { name: "Sep", received: 19500, due: 3100 },
-  { name: "Oct", received: 22000, due: 2800 },
-  { name: "Nov", received: 21000, due: 3300 },
-  { name: "Dec", received: 23000, due: 2500 },
-];
+/**
+ * financeData expected format:
+ * [
+ *   { date: "ফেব্রুয়ারী ২০২৬", totalMonthlyCollection: 800, totalMonthlyDue: 800 },
+ *   ...
+ * ]
+ */
 
-const FinanceChart = () => {
+const FinanceChart = ({ totalMonthlyPaymentCollection = [] }) => {
+  // map API data to Recharts format
+  const chartData = totalMonthlyPaymentCollection.map((item) => ({
+    name: item.date, // month name (Bengali)
+    received: item.totalMonthlyCollection || 0,
+    due: item.totalMonthlyDue || 0,
+  }));
+
   return (
     <div className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-2xl w-full h-full p-6 shadow-sm">
       {/* Header */}
@@ -47,14 +47,10 @@ const FinanceChart = () => {
       {/* Chart */}
       <ResponsiveContainer width="100%" height="85%">
         <LineChart
-          data={data}
+          data={chartData}
           margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
         >
-          <CartesianGrid
-            strokeDasharray="4 4"
-            stroke="#e5e7eb"
-            vertical={false}
-          />
+          <CartesianGrid strokeDasharray="4 4" stroke="#e5e7eb" vertical={false} />
 
           <XAxis
             dataKey="name"
