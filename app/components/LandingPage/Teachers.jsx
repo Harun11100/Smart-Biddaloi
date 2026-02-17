@@ -48,7 +48,6 @@ function HeadTeacherCard({
   );
 }
 
-/* Custom Teacher Card */
 function TeacherCard({ name, imageUrl, subjects = [], gender, experience = 5 }) {
   // Determine avatar if no imageUrl provided
   const avatar = imageUrl || (gender === "male" ? "/male.png" : "/female.png");
