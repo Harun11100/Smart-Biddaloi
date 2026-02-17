@@ -4,7 +4,50 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-/* Custom Teacher Card */
+const headTeacher = {
+  name: "জামাল উদ্দিন শেখ",
+  gender: "male",
+  experience: 22,
+  imageUrl: "/male.png", // optional
+};
+
+function HeadTeacherCard({
+  name,
+  imageUrl,
+  gender,
+  designation = "প্রধান শিক্ষক",
+  experience = 15,
+}) {
+  const avatar = imageUrl || (gender === "male" ? "/male.png" : "/female.png");
+
+  return (
+    <div className="relative overflow-hidden rounded-3xl bg-white border-2 border-blue-300 shadow-lg hover:shadow-2xl transition-all duration-300">
+      {/* Badge */}
+      <span className="absolute top-4 right-4 z-10 rounded-full bg-gradient-to-r from-blue-600 to-emerald-500 px-3 py-1 text-xs font-semibold text-white">
+        ⭐ {designation}
+      </span>
+
+      <div className="p-6 text-center">
+        <div className="relative mx-auto mb-5 h-28 w-28 rounded-full bg-blue-100 ring-4 ring-blue-300 overflow-hidden">
+          <Image src={avatar} alt={name} fill className="object-cover" />
+        </div>
+
+        <h3 className="text-xl font-bold text-blue-900">{name}</h3>
+
+        <p className="mt-1 text-sm font-semibold text-emerald-600">
+          প্রধান শিক্ষক
+        </p>
+
+        <p className="mt-2 text-sm text-gray-600">
+          {experience}+ বছরের শিক্ষাদান অভিজ্ঞতা
+        </p>
+      </div>
+
+      <div className="h-1.5 w-full bg-gradient-to-r from-blue-600 to-emerald-500" />
+    </div>
+  );
+}
+
 function TeacherCard({ name, imageUrl, subjects = [], gender, experience = 5 }) {
   // Determine avatar if no imageUrl provided
   const avatar = imageUrl || (gender === "male" ? "/male.png" : "/female.png");
@@ -70,6 +113,17 @@ export default function Teachers() {
           অভিজ্ঞ ও নিবেদিত শিক্ষক যারা শিক্ষার্থীদের সাফল্যের পথে এগিয়ে নিয়ে যান।
         </p>
       </div>
+      {/* Head Teacher */}
+
+      <div className="mb-16 max-w-3xl mx-auto">
+        <HeadTeacherCard
+          name={headTeacher.name}
+          gender={headTeacher.gender}
+          experience={headTeacher.experience}
+          imageUrl={headTeacher.imageUrl}
+        />
+      </div>
+
 
       {loading ? (
         <p className="text-center text-gray-500">Loading teachers...</p>
