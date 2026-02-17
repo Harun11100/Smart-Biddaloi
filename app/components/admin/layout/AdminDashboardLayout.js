@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import Menu from "@/app/components/admin/sidebar/Menu";
 import Navbar from "@/app/components/Navbar";
@@ -7,20 +7,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-interface SchoolData {
-  schoolId: string;
-  name?: string;
-  [key: string]: any;
-}
-
-interface AdminDashboardLayoutProps {
-  children: React.ReactNode;
-  slug: string;
-}
-
-export default function AdminDashboardLayout({ children, slug }: AdminDashboardLayoutProps) {
+export default function AdminDashboardLayout({ children, slug }) {
   const router = useRouter();
-  const [schoolData, setSchoolData] = useState<SchoolData | null>(null);
+  const [schoolData, setSchoolData] = useState(null);
 
   const schoolId = schoolData?.schoolId ?? "";
 
@@ -28,7 +17,7 @@ export default function AdminDashboardLayout({ children, slug }: AdminDashboardL
     const stored = localStorage.getItem("schoolDetails");
     if (stored) {
       try {
-        const school: SchoolData = JSON.parse(stored);
+        const school = JSON.parse(stored);
         if (!school.schoolId) {
           router.push("/sign-in-as-admin");
           return;
@@ -48,7 +37,7 @@ export default function AdminDashboardLayout({ children, slug }: AdminDashboardL
       {/* Sidebar */}
       <aside className="w-[15%] md:w-[12%] lg:w-[16%] xl:w-[14%] bg-white border-r border-gray-200 flex flex-col shadow-sm">
         {/* Logo */}
-       <div className="p-4 sticky top-0 bg-white z-20 flex justify-center">
+        <div className="p-4 sticky top-0 bg-white z-20 flex justify-center">
           <Link
             href="/"
             className="flex flex-col items-center gap-2 lg:gap-3"
@@ -63,21 +52,22 @@ export default function AdminDashboardLayout({ children, slug }: AdminDashboardL
 
             {/* School Name - only show on large & medium */}
             <span className="hidden lg:block text-center font-bold text-gray-800 text-sm lg:text-lg">
-              Barenda F.chan academy
+              {schoolData?.name || "School Name"}
             </span>
           </Link>
         </div>
+
         {/* Menu */}
         <div className="flex-1 overflow-y-auto px-2 pb-8 pt-0 custom-scrollbar">
-          <Menu slug={slug} schoolId={schoolId}/>
+          <Menu slug={slug} schoolId={schoolId} />
         </div>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-y-auto">
-       {/* Sticky Navbar */}
+        {/* Sticky Navbar */}
         <div className="sticky top-0 z-30 bg-white">
-          <Navbar />
+          <Navbar admin={schoolData?.principalName || ""} />
         </div>
 
         {/* Page Content */}
@@ -85,7 +75,6 @@ export default function AdminDashboardLayout({ children, slug }: AdminDashboardL
           {children}
         </div>
       </main>
-
     </div>
   );
 }

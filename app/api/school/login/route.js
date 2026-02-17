@@ -81,6 +81,7 @@ export async function POST(req) {
       schoolName: school.schoolName,
       phone: school.phone,
       slug: school.slug||"slug-not-set",
+      principalName:school.principalName,
     };
 
     return NextResponse.json(
