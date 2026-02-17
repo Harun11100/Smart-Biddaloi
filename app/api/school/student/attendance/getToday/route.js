@@ -15,6 +15,8 @@ export async function POST(req) {
 
     // Check if attendance already exists
     const todayAttendance = await Attendance.findOne({ schoolId, classId, date });
+    
+    
 
     if (todayAttendance) {
       return NextResponse.json({
@@ -26,7 +28,7 @@ export async function POST(req) {
 
     // If not taken yet, return full student list
     const students = await Student.find({ schoolId, classId }).select("name roll _id");
-
+    
     return NextResponse.json({
       success: true,
       alreadyTaken: false,

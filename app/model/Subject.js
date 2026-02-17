@@ -14,7 +14,6 @@ const SubjectSchema = new mongoose.Schema(
     },
     code: {
       type: String,
-      trim: true,
     },
     schoolId: {
       type: String,

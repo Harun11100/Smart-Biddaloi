@@ -17,7 +17,7 @@ export async function POST(req) {
       passingMarks,
     } = body;
 
-    // 🔴 Validation
+
     if (!name || !schoolId || !classId) {
       return NextResponse.json(
         { success: false, message: "Name, Code, School ID and Class ID are required" },

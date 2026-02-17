@@ -5,22 +5,18 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 /* Custom Teacher Card */
-function TeacherCard({ name, subjects, gender, experience }) {
-  const getAvatar = () => {
-    if (gender === "male") return "/male.png";
-    if (gender === "female") return "/female.png";
-  };
+function TeacherCard({ name, imageUrl, subjects = [], gender, experience = 5 }) {
+  // Determine avatar if no imageUrl provided
+  const avatar = imageUrl || (gender === "male" ? "/male.png" : "/female.png");
 
   return (
     <div className="group rounded-2xl bg-white border border-blue-100 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
       <div className="p-4 sm:p-6 text-center">
         <div className="relative mx-auto mb-4 h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-blue-50 ring-2 ring-blue-200 overflow-hidden">
-          <Image src={getAvatar()} alt={name} fill className="object-cover" />
+          <Image src={avatar} alt={name} fill className="object-cover" />
         </div>
 
-        <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
-          {name}
-        </h3>
+        <h3 className="text-sm sm:text-lg font-semibold text-gray-900">{name}</h3>
 
         <p className="text-xs sm:text-sm text-blue-700 font-medium mt-1">
           {subjects.length ? subjects.join(", ") : "Subject N/A"}
@@ -31,7 +27,7 @@ function TeacherCard({ name, subjects, gender, experience }) {
         </p>
       </div>
 
-      <div className="h-1 w-full bg-gradient-to-r from-blue-600 to-emerald-500  group-hover:opacity-100 transition-opacity rounded-b-2xl" />
+      <div className="h-1 w-full bg-gradient-to-r from-blue-600 to-emerald-500 group-hover:opacity-100 transition-opacity rounded-b-2xl" />
     </div>
   );
 }
@@ -47,10 +43,7 @@ export default function Teachers() {
 
     const fetchTeacherData = async () => {
       try {
-        const res = await axios.get(
-          `/api/school/getTeachers?schoolId=${schoolId}`
-        );
-
+        const res = await axios.get(`/api/school/getTeachers?schoolId=${schoolId}`);
         if (res.data?.success) {
           setTeacherData(res.data.teachers || []);
         }
@@ -78,19 +71,20 @@ export default function Teachers() {
         </p>
       </div>
 
-      {loading && (
+      {loading ? (
         <p className="text-center text-gray-500">Loading teachers...</p>
-      )}
-
-      {!loading && (
+      ) : teacherData.length === 0 ? (
+        <p className="text-center text-gray-400">No teachers found.</p>
+      ) : (
         <div className="mx-auto grid max-w-7xl grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
           {teacherData.map((teacher) => (
             <TeacherCard
               key={teacher._id}
               name={teacher.name}
               gender={teacher.gender}
-              subjects={teacher.subjects.filter(Boolean)}
-              experience={teacher.experience || 5}
+              subjects={teacher.subjects?.filter(Boolean)}
+              experience={teacher.experience}
+              imageUrl={teacher.imageUrl}
             />
           ))}
         </div>
