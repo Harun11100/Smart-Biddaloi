@@ -18,7 +18,7 @@ export default function About() {
         <div className="relative py-28 text-center px-4 sm:px-6 md:px-20">
           <FadeInSection>
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold mb-6 leading-tight">
-              বারেন্ডা এফ. চান একাডেমী সম্পর্কে
+              বারেন্ডা এফ. চাঁন একাডেমী সম্পর্কে
             </h1>
             <p className="max-w-3xl mx-auto text-sm sm:text-base md:text-lg lg:text-xl text-blue-100/90">
               আত্মবিশ্বাসী, দায়িত্বশীল এবং জ্ঞানী শিক্ষার্থী তৈরি করে একটি সুন্দর ভবিষ্যৎ গড়ে তোলা।
@@ -35,7 +35,7 @@ export default function About() {
               আমাদের পরিচিতি
             </h2>
             <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed">
-              বারেন্ডা এফ. চান একাডেমী একটি আধুনিক শিক্ষাপ্রতিষ্ঠান, যা একাডেমিক উৎকর্ষতা,
+              বারেন্ডা এফ. চাঁন একাডেমী একটি আধুনিক শিক্ষাপ্রতিষ্ঠান, যা একাডেমিক উৎকর্ষতা,
               নৈতিক মূল্যবোধ এবং সামগ্রিক উন্নয়নের জন্য নিবেদিত। আমরা শিক্ষার্থীদের
               সৃজনশীলতা, শৃঙ্খলা এবং বাস্তব জীবনের দক্ষতা গড়ে তোলায় বিশ্বাসী।
             </p>
@@ -93,7 +93,7 @@ export default function About() {
             </h2>
             <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed">
               শৃঙ্খলাবদ্ধ পরিবেশ, যোগ্য শিক্ষক এবং চমৎকার ফলাফলের মাধ্যমে
-              বারেন্ডা এফ. চান একাডেমী অভিভাবকদের আস্থার প্রতীক।
+              বারেন্ডা এফ. চাঁন একাডেমী অভিভাবকদের আস্থার প্রতীক।
             </p>
           </div>
         </FadeInSection>
@@ -106,7 +106,7 @@ export default function About() {
             একসাথে ভবিষ্যৎ গড়া
           </h2>
           <p className="max-w-2xl mx-auto text-blue-100 text-sm sm:text-base md:text-lg">
-            বারেন্ডা এফ. চান একাডেমীতে যোগ দিন এবং একটি অর্থবহ শিক্ষাজীবনের অংশ হন।
+            বারেন্ডা এফ. চাঁন একাডেমীতে যোগ দিন এবং একটি অর্থবহ শিক্ষাজীবনের অংশ হন।
           </p>
         </FadeInSection>
       </section>

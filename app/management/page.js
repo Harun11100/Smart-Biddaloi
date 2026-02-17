@@ -42,7 +42,7 @@ export default function AccountsPage() {
         </div>
 
         <p className="text-gray-500 text-center mb-4">
-          Choose a login option
+          Login to Admin Panel
         </p>
 
         {/* Teacher Button */}
@@ -67,15 +67,11 @@ export default function AccountsPage() {
           Admin Login
         </motion.button>
 
-        {/* Future Options */}
-        {/* <div className="text-center mt-6 text-sm text-gray-500">
-          <p>Parent & Student login will be available soon.</p>
-        </div> */}
-
+      
       </motion.div>
 
       {/* Footer */}
-      <p className="text-gray-400 text-xs mt-6">© 2025 All rights reserved.</p>
+      <p className="text-gray-400 text-xs mt-6">© 2025 All rights reserved. Barenda F.Chan Academy</p>
     </div>
   );
 }

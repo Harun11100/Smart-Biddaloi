@@ -7,8 +7,6 @@ import * as Yup from "yup";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-
-
 const validationSchema = Yup.object().shape({
   phone: Yup.string()
     .matches(/^[0-9]{11}$/, "Phone number must be 11 digits")
@@ -128,7 +126,7 @@ export default function OwnerLoginPage() {
       <div className="bg-white p-10 rounded-xl shadow-2xl flex flex-col gap-5 w-[380px]">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Image src="/schoolicon.png" alt="" width={28} height={28} />
-          Smart Biddaloi
+           Barenda F.Chan Academy
         </h1>
 
         <h2 className="text-gray-500 text-sm">Sign in to your account</h2>
@@ -191,12 +189,11 @@ export default function OwnerLoginPage() {
                 {loading ? "Loading..." : "Sign In"}
               </button>
 
-              {/* Forgot password */}
               <p
                 onClick={() => router.push("/ResetPasswordForm")}
                 className="text-xs text-blue-600 hover:underline cursor-pointer text-center"
               >
-                Forgot password? Reset here
+                Forgot password? Reset from mobile app
               </p>
             </form>
           )}

@@ -23,7 +23,7 @@ export default function AdminDashboard() {
         const token = localStorage.getItem("adminToken");
 
         if (!token) {
-          router.push("/admin/login");
+          router.push("/superAdmin/login");
           return;
         }
 
@@ -37,14 +37,14 @@ export default function AdminDashboard() {
         });
 
         if (res.data.success === false) {
-          router.push("/admin/login");
+          router.push("/superAdmin/login");
           return;
         }
 
         setStats(res.data.data);
       } catch (err) {
         console.error("Failed to fetch stats:", err);
-        router.push("/admin/login");
+        router.push("/superAdmin/login");
       }
     };
 

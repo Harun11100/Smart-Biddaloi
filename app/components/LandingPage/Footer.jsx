@@ -29,7 +29,7 @@ export default function Footer() {
                 />
               </div>
           <h2 className="text-xl sm:text-2xl md:text-2xl lg:text-3xl font-bold text-white mb-4 leading-snug">
-            বারেন্ডা এফ. চান একাডেমী
+           বারেন্ডা এফ. চাঁন একাডেমী
           </h2>
           <p className="text-xs sm:text-sm md:text-base text-gray-300 leading-relaxed">
             মানসম্মত শিক্ষা, দৃঢ় মূল্যবোধ এবং বাস্তব দক্ষতার মাধ্যমে শিশুদের উজ্জ্বল ভবিষ্যতের জন্য প্রস্তুত করা।
@@ -92,7 +92,7 @@ export default function Footer() {
       <div className="border-t border-white/10 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-4 text-xs sm:text-sm md:text-base text-gray-200">
           <p>
-            © {new Date().getFullYear()} বারেন্ডা এফ. চান একাডেমী। সর্বস্বত্ব সংরক্ষিত।
+            © {new Date().getFullYear()}বারেন্ডা এফ. চাঁন একাডেমী। সর্বস্বত্ব সংরক্ষিত।
           </p>
 
           {/* Management Link */}
