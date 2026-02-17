@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 
-const Navbar = () => {
+const Navbar = ({admin}) => {
 
     const router = useRouter();
 
@@ -17,16 +17,6 @@ const Navbar = () => {
   return (
     <div className="flex items-center justify-between px-4 py-3 bg-white/70 backdrop-blur-md border-b border-gray-200 ">
 
-      <div className="hidden md:flex items-center gap-2 text-sm px-3 py-[6px] rounded-full bg-gray-100 hover:bg-gray-200 transition-all">
-        <Image src="/search.png" alt="Search" width={16} height={16} />
-        <input
-          type="text"
-          placeholder="Search..."
-          className="w-[200px] bg-transparent outline-none text-gray-700 placeholder-gray-500"
-        />
-      </div>
-
-      {/* Right Section */}
       <div className="flex items-center gap-5 ml-auto">
 
         {/* Message */}
@@ -37,7 +27,7 @@ const Navbar = () => {
      </div>
         
         <div className="hidden sm:flex flex-col text-right leading-tight">
-          <span className="text-sm font-semibold text-gray-800">Md Harun Or Rashid</span>
+          <span className="text-sm font-semibold text-gray-800">{admin}</span>
           <span className="text-[11px] text-gray-500">Admin</span>
         </div>
 
