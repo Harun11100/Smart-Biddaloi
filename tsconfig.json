@@ -64,6 +64,6 @@
     "app/(dashboard)/list/[slug]/[schoolId]/teachers/[id]/TeacherCLient.js",
     "app/(dashboard)/list/[slug]/[schoolId]/teachers/[id]/page.js",
     "app/(dashboard)/list/[slug]/[schoolId]/students/[id]/page.js"
-, "app/components/FormUpdateModal.js", "app/components/forms/StudentUpdateForm.js", "app/components/CustomInput.js", "app/(dashboard)/list/[slug]/[schoolId]/teachers/page.js", "app/(dashboard)/list/[slug]/[schoolId]/classes/page.js", "app/(dashboard)/list/[slug]/[schoolId]/announcements/page.js", "app/(dashboard)/list/layout.js", "app/(dashboard)/admin/[slug]/page.js"  ],
+, "app/components/FormUpdateModal.js", "app/components/forms/StudentUpdateForm.js", "app/components/CustomInput.js", "app/(dashboard)/list/[slug]/[schoolId]/teachers/page.js", "app/(dashboard)/list/[slug]/[schoolId]/classes/page.js", "app/(dashboard)/list/[slug]/[schoolId]/announcements/page.js", "app/(dashboard)/list/layout.js", "app/(dashboard)/admin/[slug]/page.js", "app/components/admin/layout/AdminDashboardLayout.js"  ],
   "exclude": ["node_modules"]
 }

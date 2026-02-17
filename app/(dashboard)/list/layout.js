@@ -77,7 +77,7 @@ export default function Layout({ children }) {
       <main className="flex-1 flex flex-col overflow-y-auto">
              {/* Sticky Navbar */}
               <div className="sticky top-0 z-30 bg-white">
-                <Navbar />
+                <Navbar admin={schoolData.principalName} />
               </div>
       
               {/* Page Content */}
