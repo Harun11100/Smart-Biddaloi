@@ -4,19 +4,19 @@ import { useState, useEffect } from "react";
 
 const slides = [
   {
-    image: "/image1.png",
+    image: "/image1.jpeg",
     title: "বারেন্ডা এফ. চান একাডেমী",
     subtitle: "সৃজনশীলতা, জ্ঞান এবং নৈতিক মূল্যবোধের মাধ্যমে ভবিষ্যৎ প্রজন্ম গঠন।",
     cta: "ভর্তি চলছে",
   },
   {
-    image: "/image2.png",
+    image: "/image2.jpeg",
     title: "প্রতিটি শিক্ষার্থীর জন্য মানসম্মত শিক্ষা",
     subtitle: "আত্মবিশ্বাস ও দক্ষতার সাথে স্বপ্ন পূরণের পথে এগিয়ে চলা।",
     cta: "এখনই আবেদন করুন",
   },
   {
-    image: "/image3.png",
+    image: "/image3.jpeg",
     title: "আধুনিক ও সহায়ক শিক্ষার পরিবেশ",
     subtitle: "স্মার্ট ক্লাসরুম, সমৃদ্ধ লাইব্রেরি ও আধুনিক ল্যাব সুবিধা।",
     cta: "আমাদের সাথে যোগ দিন",

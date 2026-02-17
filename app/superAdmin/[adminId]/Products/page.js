@@ -16,14 +16,14 @@ export default function ProductsHome() {
 
         <div className="space-y-4">
           <Link
-            href={`/admin/${adminId}/Products/allProducts`}
+            href={`/superAdmin/${adminId}/Products/allProducts`}
             className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition"
           >
             View All Products
           </Link>
 
           <Link
-            href={`/admin/${adminId}/Products/createProduct`}
+            href={`/superAdmin/${adminId}/Products/createProduct`}
             className="block w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition"
           >
             Upload Product

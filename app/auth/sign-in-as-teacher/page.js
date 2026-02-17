@@ -131,7 +131,7 @@ export default function TeacherLoginPage() {
       <div className="bg-white p-12 rounded-xl shadow-2xl flex flex-col gap-4 w-[380px]">
         <h1 className="text-xl font-bold flex items-center gap-2">
           <Image src="/Schoolicon.png" alt="" width={24} height={24} />
-          Smart Biddaloi
+          Barenda F.Chan Academy
         </h1>
         <h2 className="text-gray-400 text-sm">Login to your account</h2>
 
@@ -159,7 +159,6 @@ export default function TeacherLoginPage() {
                 )}
               </div>
 
-              {/* Password */}
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-gray-500">Password</label>
                 <input
@@ -184,7 +183,6 @@ export default function TeacherLoginPage() {
                 {loading ? "Loading..." : "Sign In"}
               </button>
 
-              {/* Forgot Password */}
               <p
                 onClick={() => router.push("/ResetPasswordForm")}
                 className="text-xs text-blue-600 hover:underline cursor-pointer text-center"

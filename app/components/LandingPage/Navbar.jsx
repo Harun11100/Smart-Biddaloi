@@ -74,7 +74,7 @@ export default function Navbar() {
         href="#home"
         className="text-lg sm:text-sm md:text-2xl font-extrabold text-blue-800 hover:text-blue-600 transition-colors duration-300"
       >
-        বারেন্ডা এফ. চান একাডেমী
+       বারেন্ডা এফ. চাঁন একাডেমী
       </Link>
     </div>
           

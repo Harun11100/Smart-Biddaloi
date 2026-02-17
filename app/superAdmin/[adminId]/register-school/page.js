@@ -102,7 +102,7 @@ export default function SchoolRegisterPage() {
       setLogoUri(null);
       setCoverUri(null);
 
-      router.push("/school-login");
+      router.push("/superAdmin/login");
     } catch (err) {
       console.log(err);
       alert(err?.response?.data?.message || "কিছু ভুল হয়েছে");
