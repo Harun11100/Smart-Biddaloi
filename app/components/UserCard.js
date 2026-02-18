@@ -1,14 +1,10 @@
+"use client";
+
 import Image from "next/image";
 
-interface UserCardProps {
-  type?: string; // can match stats title like "Students", "Teachers", etc.
-  count?: number;
-  title?: string;
-}
-
-const UserCard: React.FC<UserCardProps> = ({ type, count, title }) => {
+const UserCard = ({ type, count, title }) => {
   // Map the title/type to a gradient
-  const bgColors: Record<string, string> = {
+  const bgColors = {
     Students: "from-green-50 to-green-200",
     Teachers: "from-blue-50 to-blue-200",
     "Payment Count": "from-purple-50 to-purple-200",
@@ -19,7 +15,9 @@ const UserCard: React.FC<UserCardProps> = ({ type, count, title }) => {
     <div
       className={`
         flex-1 min-w-[120px] rounded-2xl p-5
-        bg-gradient-to-br ${bgColors[title ?? type ?? ""] ?? "from-gray-50 to-gray-200"}
+        bg-gradient-to-br ${
+          bgColors[title || type || ""] || "from-gray-50 to-gray-200"
+        }
         shadow-sm border border-gray-200
         hover:shadow-md transition-all duration-300
       `}
@@ -45,7 +43,7 @@ const UserCard: React.FC<UserCardProps> = ({ type, count, title }) => {
 
       {/* Label */}
       <h2 className="text-sm font-medium text-gray-700 capitalize">
-        {title ?? type ?? "Unknown"}
+        {title || type || "Unknown"}
       </h2>
     </div>
   );

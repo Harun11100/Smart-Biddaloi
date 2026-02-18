@@ -80,7 +80,7 @@ export default function Teachers() {
   const [loading, setLoading] = useState(true);
 
   const schoolId = process.env.NEXT_PUBLIC_SCHOOL_ID;
-
+  
   useEffect(() => {
     if (!schoolId) return;
 
