@@ -9,89 +9,250 @@ export async function POST(req) {
 
     const { phone, password, expoToken } = await req.json();
 
+    // -----------------------------------------
+    // Validate input
+    // -----------------------------------------
+
     if (!phone?.trim() || !password) {
       return NextResponse.json(
-        { message: "Phone and password are required" },
+        {
+          success: false,
+          message: "Phone and password are required",
+        },
         { status: 400 }
       );
     }
 
     const phoneTrimmed = phone.trim();
 
+    // -----------------------------------------
+    // Validate phone number
+    // -----------------------------------------
+
     if (!/^[0-9]{11}$/.test(phoneTrimmed)) {
       return NextResponse.json(
-        { message: "Phone number must be 11 digits" },
+        {
+          success: false,
+          message: "Phone number must be 11 digits",
+        },
         { status: 400 }
       );
     }
 
-    const school = await School.findOne({ phone: phoneTrimmed});
-    
+    // -----------------------------------------
+    // Find school
+    // -----------------------------------------
+
+    const school = await School.findOne({
+      phone: phoneTrimmed,
+    });
+
     if (!school) {
       return NextResponse.json(
-        { message: "School not found with this phone" },
+        {
+          success: false,
+          message: "School not found with this phone",
+        },
         { status: 404 }
       );
     }
 
+    // -----------------------------------------
+    // Check account status
+    // -----------------------------------------
+
+    if (!school.isActive) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "This school account is currently inactive",
+        },
+        { status: 403 }
+      );
+    }
+
+    // -----------------------------------------
+    // Compare password
+    // -----------------------------------------
+
     const isMatch = await school.comparePassword(password);
+
     if (!isMatch) {
       return NextResponse.json(
-        { message: "Incorrect password" },
+        {
+          success: false,
+          message: "Incorrect password",
+        },
         { status: 401 }
       );
     }
+
+    // -----------------------------------------
+    // Update Expo push token
+    // -----------------------------------------
 
     if (expoToken && expoToken !== school.expoToken) {
       school.expoToken = expoToken;
       await school.save();
     }
 
-     if (!school.email) {
-          return NextResponse.json({ success: false, message: "School not found or email missing" }, { status: 404 });
-        }
-    
-        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    
-        // Store the code and expiry (5 minutes)
-        school.loginOTP = verificationCode;
-        school.loginOTPExpiry = Date.now() + 15 * 60 * 1000;
-        await school.save();
-    
-        // Send email using Nodemailer
-        const transporter = nodemailer.createTransport({
-          service: "gmail",
-          auth: {
-            user: process.env.GMAIL_USER,
-            pass: process.env.GMAIL_PASS,
-          },
-        });
+    // -----------------------------------------
+    // Check email
+    // -----------------------------------------
 
-        await transporter.sendMail({
-          from: `"Smart School Manager" <${process.env.GMAIL_USER}>`,
-          to: school.email,
-          subject: "Login Verification Code",
-          text: `Your Login verification code is: ${verificationCode}`,
-          html: `<p>Your verification code is: <b>${verificationCode}</b></p>
-                 <p>This code will expire in 2 minutes.</p>`,
-        });
-    
+    if (!school.email) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "School email is missing",
+        },
+        { status: 400 }
+      );
+    }
+
+    // -----------------------------------------
+    // Generate Login OTP
+    // -----------------------------------------
+
+    const verificationCode = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
+
+    // OTP expires after 15 minutes
+    school.loginOTP = verificationCode;
+    school.loginOTPExpiry =
+      Date.now() + 15 * 60 * 1000;
+
+    await school.save();
+
+    // -----------------------------------------
+    // Gmail transporter
+    // -----------------------------------------
+
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+      console.error("Gmail credentials are missing");
+
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Email service is not configured",
+        },
+        { status: 500 }
+      );
+    }
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS,
+      },
+    });
+
+    // -----------------------------------------
+    // Send OTP email
+    // -----------------------------------------
+
+    await transporter.sendMail({
+      from: `"Smart School Manager" <${process.env.GMAIL_USER}>`,
+      to: school.email,
+
+      subject: "Login Verification Code",
+
+      text: `
+Your Smart School Manager login verification code is:
+
+${verificationCode}
+
+This code will expire in 15 minutes.
+
+If you did not try to log in, please ignore this email.
+      `,
+
+      html: `
+        <div style="
+          font-family: Arial, sans-serif;
+          max-width: 500px;
+          margin: auto;
+          padding: 20px;
+        ">
+
+          <h2>Login Verification</h2>
+
+          <p>
+            Hello ${school.principalName || "Principal"},
+          </p>
+
+          <p>
+            Your Smart School Manager login verification code is:
+          </p>
+
+          <div style="
+            font-size: 32px;
+            font-weight: bold;
+            letter-spacing: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+            background: #f2f4f7;
+            border-radius: 8px;
+          ">
+            ${verificationCode}
+          </div>
+
+          <p>
+            This code will expire in
+            <strong>15 minutes</strong>.
+          </p>
+
+          <p>
+            If you did not try to log in, please ignore this email.
+          </p>
+
+          <p>
+            Thank you.
+          </p>
+
+        </div>
+      `,
+    });
+
+    // -----------------------------------------
+    // Safe school data
+    // -----------------------------------------
+
     const schoolData = {
       schoolId: school._id,
       schoolName: school.schoolName,
       phone: school.phone,
-      slug: school.slug||"slug-not-set",
-      principalName:school.principalName,
+      email: school.email,
+      slug: school.slug || "slug-not-set",
+      principalName: school.principalName,
+      logo: school.logo || null,
+      cover: school.cover || null,
+      role: school.role,
     };
 
+    // -----------------------------------------
+    // Response
+    // -----------------------------------------
+
     return NextResponse.json(
-      { message: "Verification code sent to email", school: schoolData },
+      {
+        success: true,
+        message: "Verification code sent to email",
+        school: schoolData,
+      },
       { status: 200 }
     );
   } catch (error) {
     console.error("School login error:", error);
+
     return NextResponse.json(
-      { message: "Server error, please try again later" },
+      {
+        success: false,
+        message: "Server error, please try again later",
+      },
       { status: 500 }
     );
   }
