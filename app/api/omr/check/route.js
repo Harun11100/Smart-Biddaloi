@@ -7,6 +7,7 @@ import Teacher from "@/app/model/Teacher";
 import fs from "fs/promises"; // ✅ IMPORTANT
 import path from "path";
 import os from "os";
+// this is just for tempoorayr  sjfisf
 
 /* ================= HELPER: CALL GEMINI ================= */
 async function detectOmrAnswersWithGemini(filePath) {
