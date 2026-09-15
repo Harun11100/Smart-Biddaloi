@@ -1,13 +1,13 @@
 import School from "@/app/model/School";
 import connectDb from "@/app/utils/db";
 import { NextResponse } from "next/server";
-import nodemailer from "nodemailer";
+import jwt from "jsonwebtoken"; // Make sure jsonwebtoken is installed
 
 export async function POST(req) {
   try {
     await connectDb();
 
-    const { phone, password, expoToken } = await req.json();
+    const { phone, password } = await req.json();
 
     // -----------------------------------------
     // Validate input
@@ -88,134 +88,25 @@ export async function POST(req) {
     }
 
     // -----------------------------------------
-    // Update Expo push token
+    // Generate JWT Token
     // -----------------------------------------
 
-    if (expoToken && expoToken !== school.expoToken) {
-      school.expoToken = expoToken;
-      await school.save();
-    }
-
-    // -----------------------------------------
-    // Check email
-    // -----------------------------------------
-
-    if (!school.email) {
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is missing in environment variables");
       return NextResponse.json(
         {
           success: false,
-          message: "School email is missing",
-        },
-        { status: 400 }
-      );
-    }
-
-    // -----------------------------------------
-    // Generate Login OTP
-    // -----------------------------------------
-
-    const verificationCode = Math.floor(
-      100000 + Math.random() * 900000
-    ).toString();
-
-    // OTP expires after 15 minutes
-    school.loginOTP = verificationCode;
-    school.loginOTPExpiry =
-      Date.now() + 15 * 60 * 1000;
-
-    await school.save();
-
-    // -----------------------------------------
-    // Gmail transporter
-    // -----------------------------------------
-
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
-      console.error("Gmail credentials are missing");
-
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Email service is not configured",
+          message: "Server configuration error",
         },
         { status: 500 }
       );
     }
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS,
-      },
-    });
-
-    // -----------------------------------------
-    // Send OTP email
-    // -----------------------------------------
-
-    await transporter.sendMail({
-      from: `"Smart School Manager" <${process.env.GMAIL_USER}>`,
-      to: school.email,
-
-      subject: "Login Verification Code",
-
-      text: `
-Your Smart School Manager login verification code is:
-
-${verificationCode}
-
-This code will expire in 15 minutes.
-
-If you did not try to log in, please ignore this email.
-      `,
-
-      html: `
-        <div style="
-          font-family: Arial, sans-serif;
-          max-width: 500px;
-          margin: auto;
-          padding: 20px;
-        ">
-
-          <h2>Login Verification</h2>
-
-          <p>
-            Hello ${school.principalName || "Principal"},
-          </p>
-
-          <p>
-            Your Smart School Manager login verification code is:
-          </p>
-
-          <div style="
-            font-size: 32px;
-            font-weight: bold;
-            letter-spacing: 8px;
-            padding: 15px;
-            margin: 20px 0;
-            text-align: center;
-            background: #f2f4f7;
-            border-radius: 8px;
-          ">
-            ${verificationCode}
-          </div>
-
-          <p>
-            This code will expire in
-            <strong>15 minutes</strong>.
-          </p>
-
-          <p>
-            If you did not try to log in, please ignore this email.
-          </p>
-
-          <p>
-            Thank you.
-          </p>
-
-        </div>
-      `,
-    });
+    const token = jwt.sign(
+      { schoolId: school._id, phone: school.phone },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" } // Adjust token expiration as needed
+    );
 
     // -----------------------------------------
     // Safe school data
@@ -240,7 +131,8 @@ If you did not try to log in, please ignore this email.
     return NextResponse.json(
       {
         success: true,
-        message: "Verification code sent to email",
+        message: "Login successful",
+        token: token,
         school: schoolData,
       },
       { status: 200 }
