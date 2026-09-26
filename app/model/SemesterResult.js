@@ -26,12 +26,27 @@ const SemesterResultSchema = new mongoose.Schema(
       required: true,
     },
 
-    // Complete subject-wise result
     subjects: [
       {
         subjectId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Subject",
+          required: true,
+        },
+
+        teacherId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Teacher",
+          required: true,
+        },
+
+        maxMarks: {
+          type: Number,
+          required: true,
+        },
+
+        passingMarks: {
+          type: Number,
           required: true,
         },
 
@@ -49,10 +64,20 @@ const SemesterResultSchema = new mongoose.Schema(
           type: Number,
           default: null,
         },
+
+        status: {
+          type: String,
+          enum: ["draft", "submitted", "verified"],
+          default: "draft",
+        },
+
+        remarks: {
+          type: String,
+          default: "",
+        },
       },
     ],
 
-    // Overall result
     totalMarks: {
       type: Number,
       default: 0,
@@ -78,7 +103,6 @@ const SemesterResultSchema = new mongoose.Schema(
       default: null,
     },
 
-    // Publication status
     status: {
       type: String,
       enum: ["draft", "verified", "published"],
@@ -95,13 +119,10 @@ const SemesterResultSchema = new mongoose.Schema(
       default: "",
     },
   },
-
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-// One student can have only one semester result
+// One student can have only one result for one semester
 SemesterResultSchema.index(
   {
     studentId: 1,
@@ -111,6 +132,12 @@ SemesterResultSchema.index(
     unique: true,
   }
 );
+
+// Useful for class result/ranking queries
+SemesterResultSchema.index({
+  classId: 1,
+  semesterId: 1,
+});
 
 export default mongoose.models.SemesterResult ||
   mongoose.model("SemesterResult", SemesterResultSchema);
