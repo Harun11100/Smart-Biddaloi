@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 
 const teacherSchema = new mongoose.Schema(
   {
-    classTeacher: { type: String },
+
     
     email: {
       type: String,
@@ -14,12 +14,10 @@ const teacherSchema = new mongoose.Schema(
     },
 
     name: { type: String, required: true },
-    userName: { type: String},
+
     password: { type: String, required: true, select: false },
-    gender: { type: String },
-    nid: { type: String },
     address: { type: String },
-    bloodGroup: { type: String },
+
     experience:{type:String, default:3},
     imageUrl: { type: String, default:null },
     phone: {
@@ -28,7 +26,11 @@ const teacherSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
-    role: { type: String, required: true },
+     role: {
+     type: String,
+     enum: ["teacher", "accountant", "admin"],
+     required: true,
+  },
     totalPresentDays: [
       {
         month: { type: String },
@@ -47,20 +49,7 @@ const teacherSchema = new mongoose.Schema(
 
     expoToken: { type: String, default: null },
 
-    loginOTP: { type: String, default: null },
-
-    loginOTPExpiry: { type: Date, default: null },
-    answerKey: {
-      type: Object, // { "1": "A", "2": "B" }
-      default: {},
-    },
-    rawAnswerKey: {
-      type: String,
-      default: "",
-    },
-    answerKeyUpdatedAt: {
-      type: Date,
-    },
+  
   },
   { timestamps: true }
 );
