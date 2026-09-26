@@ -2,70 +2,165 @@ import School from "@/app/model/School";
 import Teacher from "@/app/model/Teacher";
 import connectDb from "@/app/utils/db";
 import { NextResponse } from "next/server";
-import nodemailer from "nodemailer";
 
 export async function POST(req) {
   try {
     await connectDb();
 
     const body = await req.json();
-    console.log("Received teacher creation request:", body)
+
+    console.log(
+      "Received staff creation request:",
+      body
+    );
+
     const {
-      classTeacher = "",
       email,
-      experience = "",
       name,
       password,
       phone,
       role,
       schoolId,
       subjects = [],
-      imageUrl = null,
-      gender = "male",
       address = "",
-      bloodGroup = "",
-      nid = "",
-      userName = "",
+      experience = "",
+      imageUrl = null,
     } = body;
 
-    if (!email || !name || !password || !phone || !schoolId || !role ) {
+    // ==========================================
+    // REQUIRED FIELD VALIDATION
+    // ==========================================
+    if (
+      !email ||
+      !name ||
+      !password ||
+      !phone ||
+      !schoolId ||
+      !role
+    ) {
       return NextResponse.json(
-        { success: false, message: "সব প্রয়োজনীয় তথ্য প্রদান করুন।" },
+        {
+          success: false,
+          message:
+            "নাম, ইমেইল, ফোন, পিন, দায়িত্ব এবং স্কুলের তথ্য প্রদান করুন।",
+        },
         { status: 400 }
       );
     }
 
-    // Check for duplicates
-    const existing = await Teacher.findOne({ $or: [{ email }, { phone }] });
-    if (existing) {
+    // ==========================================
+    // VALIDATE ROLE
+    // ==========================================
+    const allowedRoles = [
+      "teacher",
+      "accountant",
+      "admin",
+    ];
+
+    if (!allowedRoles.includes(role)) {
       return NextResponse.json(
-        { success: false, message: "ইমেইল বা ফোন ইতিমধ্যেই ব্যবহার করা হয়েছে।" },
+        {
+          success: false,
+          message: "অবৈধ দায়িত্ব নির্বাচন করা হয়েছে।",
+        },
+        { status: 400 }
+      );
+    }
+
+    // ==========================================
+    // CHECK SCHOOL
+    // ==========================================
+    const school = await School.findById(schoolId);
+
+    if (!school) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "স্কুল খুঁজে পাওয়া যায়নি।",
+        },
+        { status: 404 }
+      );
+    }
+
+    // ==========================================
+    // CHECK DUPLICATE EMAIL / PHONE
+    // ==========================================
+    const existing = await Teacher.findOne({
+      $or: [
+        { email: email.trim().toLowerCase() },
+        { phone: phone.trim() },
+      ],
+    });
+
+    if (existing) {
+      let message =
+        "ইমেইল বা ফোন ইতিমধ্যেই ব্যবহার করা হয়েছে।";
+
+      if (
+        existing.email ===
+        email.trim().toLowerCase()
+      ) {
+        message =
+          "এই ইমেইল ইতিমধ্যেই ব্যবহার করা হয়েছে।";
+      } else if (
+        existing.phone === phone.trim()
+      ) {
+        message =
+          "এই ফোন নম্বর ইতিমধ্যেই ব্যবহার করা হয়েছে।";
+      }
+
+      return NextResponse.json(
+        {
+          success: false,
+          message,
+        },
         { status: 409 }
       );
     }
 
+    // ==========================================
+    // CREATE TEACHER / STAFF
+    // ==========================================
     const newTeacher = await Teacher.create({
-      classTeacher,
-      email,
-      name,
-      password,
-      phone,
+      name: name.trim(),
+
+      email: email.trim().toLowerCase(),
+
+      phone: phone.trim(),
+
+      password: password.trim(),
+
       role,
-      experience,
-      imageUrl,
+
       schoolId,
-      subjects,
-      gender,
-      address,
-      bloodGroup,
-      nid,
-      userName,
+
+      subjects: Array.isArray(subjects)
+        ? subjects
+        : [],
+
+      address: address.trim(),
+
+      experience,
+
+      imageUrl,
     });
 
-    // Increment teacher count in the school
-    await School.findByIdAndUpdate(schoolId, { $inc: { totalTeachers: 1 } });
+    // ==========================================
+    // INCREMENT SCHOOL STAFF COUNT
+    // ==========================================
+    await School.findByIdAndUpdate(
+      schoolId,
+      {
+        $inc: {
+          totalTeachers: 1,
+        },
+      }
+    );
 
-    // Exclude sensitive data
+    // ==========================================
+    // SAFE RESPONSE
+    // Never send password to frontend
+    // ==========================================
     const safeTeacher = {
       _id: newTeacher._id,
       name: newTeacher.name,
@@ -75,40 +170,44 @@ export async function POST(req) {
       experience: newTeacher.experience,
       imageUrl: newTeacher.imageUrl,
       schoolId: newTeacher.schoolId,
-      classTeacher: newTeacher.classTeacher,
       subjects: newTeacher.subjects,
-      gender: newTeacher.gender,
+      address: newTeacher.address,
     };
 
-    const transporter = nodemailer.createTransport({
-          service: "gmail",
-          auth: {
-            user: process.env.GMAIL_USER,
-            pass: process.env.GMAIL_PASS,
-          },
-        });
-    
-        await transporter.sendMail({
-          from: `"বারেন্ডা এফ চান একাডেমী" <${process.env.GMAIL_USER}>`,
-          to:email,
-          subject: "নিবন্ধন সফল হয়েছে",
-         html: `
-          <p>প্রিয় ${name},</p>
-          <p>আপনাকে <strong> বারেন্ডা এফ চান একাডেমীতে </strong>-এ সফলভাবে শিক্ষক হিসেবে নিবন্ধন করা হয়েছে।</p>
-          <p>আপনার অ্যাকাউন্ট এখন ব্যবহার করার জন্য প্রস্তুত।</p>
-          <br/>
-          <p>ধন্যবাদ</p>
-        `
-        });
-
     return NextResponse.json(
-      { success: true, message: "শিক্ষক সফলভাবে যুক্ত হয়েছে!", teacher: safeTeacher },
+      {
+        success: true,
+        message: "স্টাফ সফলভাবে যুক্ত হয়েছে!",
+        teacher: safeTeacher,
+      },
       { status: 201 }
     );
   } catch (err) {
-    console.error("❌ Error creating teacher:", err);
+    console.error(
+      "❌ Error creating staff:",
+      err
+    );
+
+    // ==========================================
+    // MONGOOSE DUPLICATE KEY ERROR
+    // ==========================================
+    if (err.code === 11000) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "ইমেইল অথবা ফোন নম্বর ইতিমধ্যে ব্যবহার করা হয়েছে।",
+        },
+        { status: 409 }
+      );
+    }
+
     return NextResponse.json(
-      { success: false, message: "সার্ভার ত্রুটি হয়েছে। পরে আবার চেষ্টা করুন।" },
+      {
+        success: false,
+        message:
+          "সার্ভার ত্রুটি হয়েছে। পরে আবার চেষ্টা করুন।",
+      },
       { status: 500 }
     );
   }
