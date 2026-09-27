@@ -78,7 +78,7 @@ export async function POST(req) {
     }
 
     // -----------------------------------------
-    // 3. Validate marks settings
+    // 3. Validate max marks & passing marks
     // -----------------------------------------
 
     const parsedMaxMarks = Number(maxMarks);
@@ -124,6 +124,8 @@ export async function POST(req) {
     // 4. Validate student results
     // -----------------------------------------
 
+    const studentIds = [];
+
     for (const item of results) {
       if (!item.studentId) {
         return NextResponse.json(
@@ -166,102 +168,123 @@ export async function POST(req) {
           { status: 400 }
         );
       }
+
+      studentIds.push(item.studentId);
     }
 
     // -----------------------------------------
-    // 5. Create / update semester results
+    // 5. Prevent duplicate student IDs
     // -----------------------------------------
 
-    const operations = [];
+    const uniqueStudentIds = [
+      ...new Set(studentIds),
+    ];
 
-    for (const item of results) {
+    if (uniqueStudentIds.length !== studentIds.length) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Duplicate student IDs found in results.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // -----------------------------------------
+    // 6. Check if this subject result
+    //    already exists for any student
+    // -----------------------------------------
+
+    const existingResults = await SemesterResult.find({
+      semesterId,
+      studentId: {
+        $in: uniqueStudentIds,
+      },
+      "subjects.subjectId": subjectId,
+    }).select("studentId");
+
+    if (existingResults.length > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          alreadyExists: true,
+          message:
+            "Result for this subject has already been uploaded.",
+          students: existingResults.map(
+            (item) => item.studentId
+          ),
+        },
+        { status: 409 }
+      );
+    }
+
+    // -----------------------------------------
+    // 7. Create / update semester result
+    // -----------------------------------------
+
+    const operations = results.map((item) => {
       const mark = Number(item.mark);
 
-      // First try to update an existing subject
-      const existingResult = await SemesterResult.findOne({
-        studentId: item.studentId,
-        semesterId,
-        "subjects.subjectId": subjectId,
-      });
-
-      if (existingResult) {
-        operations.push({
-          updateOne: {
-            filter: {
-              _id: existingResult._id,
-              "subjects.subjectId": subjectId,
-            },
-
-            update: {
-              $set: {
-                "subjects.$.teacherId": teacherId,
-                "subjects.$.maxMarks": parsedMaxMarks,
-                "subjects.$.passingMarks": parsedPassingMarks,
-                "subjects.$.totalMarks": mark,
-                "subjects.$.status": "submitted",
-              },
-            },
+      return {
+        updateOne: {
+          filter: {
+            studentId: item.studentId,
+            semesterId,
           },
-        });
-      } else {
-        // Student semester result doesn't have this subject yet
-        operations.push({
-          updateOne: {
-            filter: {
-              studentId: item.studentId,
+
+          update: {
+            $setOnInsert: {
+              schoolId,
               semesterId,
+              classId,
+              studentId: item.studentId,
             },
 
-            update: {
-              $setOnInsert: {
-                schoolId,
-                semesterId,
-                classId,
-                studentId: item.studentId,
-              },
-
-              $push: {
-                subjects: {
-                  subjectId,
-                  teacherId,
-                  maxMarks: parsedMaxMarks,
-                  passingMarks: parsedPassingMarks,
-                  totalMarks: mark,
-                  status: "submitted",
-                },
+            $push: {
+              subjects: {
+                subjectId,
+                teacherId,
+                maxMarks: parsedMaxMarks,
+                passingMarks: parsedPassingMarks,
+                totalMarks: mark,
+                status: "submitted",
               },
             },
-
-            upsert: true,
           },
-        });
-      }
-    }
+
+          upsert: true,
+        },
+      };
+    });
 
     // -----------------------------------------
-    // 6. Execute all updates together
+    // 8. Execute all operations
     // -----------------------------------------
 
-    if (operations.length > 0) {
+    const bulkResult =
       await SemesterResult.bulkWrite(operations);
-    }
 
     // -----------------------------------------
-    // 7. Response
+    // 9. Response
     // -----------------------------------------
 
     return NextResponse.json(
       {
         success: true,
-        message: "Subject results uploaded successfully.",
+        message:
+          "Subject results uploaded successfully.",
+
         data: {
           semesterId,
           subjectId,
           teacherId,
           studentsProcessed: results.length,
+          createdOrUpdated:
+            bulkResult.upsertedCount +
+            bulkResult.modifiedCount,
         },
       },
-      { status: 200 }
+      { status: 201 }
     );
   } catch (error) {
     console.error(
@@ -269,10 +292,27 @@ export async function POST(req) {
       error
     );
 
+    // -----------------------------------------
+    // Duplicate key protection
+    // -----------------------------------------
+
+    if (error.code === 11000) {
+      return NextResponse.json(
+        {
+          success: false,
+          alreadyExists: true,
+          message:
+            "A semester result already exists for one or more students.",
+        },
+        { status: 409 }
+      );
+    }
+
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to upload semester results.",
+        message:
+          "Failed to upload semester results.",
       },
       { status: 500 }
     );
