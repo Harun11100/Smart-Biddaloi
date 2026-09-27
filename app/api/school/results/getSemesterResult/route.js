@@ -14,7 +14,13 @@ export async function GET(req) {
     const studentId = searchParams.get("studentId");
     const semesterId = searchParams.get("semesterId");
 
-    // Required fields
+    console.log("=================================");
+    console.log("GET SEMESTER RESULT");
+    console.log("schoolId:", schoolId);
+    console.log("studentId:", studentId);
+    console.log("semesterId:", semesterId);
+    console.log("=================================");
+
     if (!schoolId || !studentId || !semesterId) {
       return NextResponse.json(
         {
@@ -25,7 +31,6 @@ export async function GET(req) {
       );
     }
 
-    // Validate ObjectIds
     if (
       !mongoose.Types.ObjectId.isValid(schoolId) ||
       !mongoose.Types.ObjectId.isValid(studentId) ||
@@ -34,28 +39,27 @@ export async function GET(req) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid ID format.",
+          message: "Invalid ObjectId.",
         },
         { status: 400 }
       );
     }
 
-    // Find student's semester result
+    console.log("IDs are valid.");
+
     const result = await SemesterResult.findOne({
       schoolId,
       studentId,
       semesterId,
-    })
-      .populate("subjects.subjectId", "name code")
-      .populate("subjects.teacherId", "name")
-      .lean();
+    }).lean();
 
-    // No result found
+    console.log("Database result:", result);
+
     if (!result) {
       return NextResponse.json(
         {
           success: true,
-          message: "No result found for this semester.",
+          message: "No result found.",
           data: null,
         },
         { status: 200 }
@@ -71,12 +75,14 @@ export async function GET(req) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("❌ Get semester result error:", error);
+    console.error("❌ GET SEMESTER RESULT ERROR:");
+    console.error(error);
 
     return NextResponse.json(
       {
         success: false,
         message: "Internal server error.",
+        error: error.message,
       },
       { status: 500 }
     );
