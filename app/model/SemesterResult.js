@@ -27,11 +27,15 @@ const SemesterResultSchema = new mongoose.Schema(
     },
 
     subjects: [
-      {
+       {
         subjectId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Subject",
           required: true,
+        },
+
+        subjectName:{
+          type: String
         },
 
         teacherId: {
