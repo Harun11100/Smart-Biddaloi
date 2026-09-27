@@ -26,6 +26,11 @@ const SemesterResultSchema = new mongoose.Schema(
       required: true,
     },
 
+    totalSubject:{
+      type:Number,
+      required:true
+    },
+    
     subjects: [
        {
         subjectId: {

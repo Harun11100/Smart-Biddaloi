@@ -14,6 +14,11 @@ const ClassSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    totalSubject:{
+      type:Number,
+      required:true
+    },
+
     studentCount:{
        type: Number,
        required: true,
