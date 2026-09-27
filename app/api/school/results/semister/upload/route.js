@@ -33,7 +33,6 @@ export async function POST(req) {
       !classId ||
       !teacherId ||
       !semesterId ||
-      !subjectName||
       !subjectId
     ) {
       return NextResponse.json(
