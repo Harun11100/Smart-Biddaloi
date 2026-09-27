@@ -6,6 +6,65 @@ import mongoose from "mongoose";
 import connectDb from "@/app/utils/db";
 import SemesterResult from "@/app/model/SemesterResult";
 
+// =====================================================
+// Calculate Grade & GPA
+// =====================================================
+
+function calculateGradeAndGPA(mark, maxMarks) {
+  const percentage = (mark / maxMarks) * 100;
+
+  if (percentage >= 80) {
+    return {
+      grade: "A+",
+      gpa: 5.0,
+    };
+  }
+
+  if (percentage >= 70) {
+    return {
+      grade: "A",
+      gpa: 4.0,
+    };
+  }
+
+  if (percentage >= 60) {
+    return {
+      grade: "A-",
+      gpa: 3.5,
+    };
+  }
+
+  if (percentage >= 50) {
+    return {
+      grade: "B",
+      gpa: 3.0,
+    };
+  }
+
+  if (percentage >= 40) {
+    return {
+      grade: "C",
+      gpa: 2.0,
+    };
+  }
+
+  if (percentage >= 33) {
+    return {
+      grade: "D",
+      gpa: 1.0,
+    };
+  }
+
+  return {
+    grade: "F",
+    gpa: 0.0,
+  };
+}
+
+// =====================================================
+// POST
+// =====================================================
+
 export async function POST(req) {
   try {
     await connectDb();
@@ -17,6 +76,7 @@ export async function POST(req) {
       classId,
       teacherId,
       semesterId,
+      totalSubject,
       subjectId,
       subjectName,
       maxMarks,
@@ -24,21 +84,23 @@ export async function POST(req) {
       results,
     } = body;
 
-    // -----------------------------------------
-    // 1. Basic validation
-    // -----------------------------------------
+    // =================================================
+    // 1. Required fields
+    // =================================================
 
     if (
       !schoolId ||
       !classId ||
       !teacherId ||
       !semesterId ||
-      !subjectId
+      !subjectId ||
+      !subjectName
     ) {
       return NextResponse.json(
         {
           success: false,
-          message: "Required information is missing.",
+          message:
+            "schoolId, classId, teacherId, semesterId, subjectId and subjectName are required.",
         },
         { status: 400 }
       );
@@ -54,9 +116,9 @@ export async function POST(req) {
       );
     }
 
-    // -----------------------------------------
+    // =================================================
     // 2. Validate ObjectIds
-    // -----------------------------------------
+    // =================================================
 
     const ids = [
       ["schoolId", schoolId],
@@ -78,9 +140,9 @@ export async function POST(req) {
       }
     }
 
-    // -----------------------------------------
-    // 3. Validate max marks & passing marks
-    // -----------------------------------------
+    // =================================================
+    // 3. Validate marks configuration
+    // =================================================
 
     const parsedMaxMarks = Number(maxMarks);
     const parsedPassingMarks = Number(passingMarks);
@@ -92,7 +154,7 @@ export async function POST(req) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid max marks or passing marks.",
+          message: "Invalid maxMarks or passingMarks.",
         },
         { status: 400 }
       );
@@ -121,9 +183,9 @@ export async function POST(req) {
       );
     }
 
-    // -----------------------------------------
-    // 4. Validate student results
-    // -----------------------------------------
+    // =================================================
+    // 4. Validate students and marks
+    // =================================================
 
     const studentIds = [];
 
@@ -173,13 +235,11 @@ export async function POST(req) {
       studentIds.push(item.studentId);
     }
 
-    // -----------------------------------------
+    // =================================================
     // 5. Prevent duplicate student IDs
-    // -----------------------------------------
+    // =================================================
 
-    const uniqueStudentIds = [
-      ...new Set(studentIds),
-    ];
+    const uniqueStudentIds = [...new Set(studentIds)];
 
     if (uniqueStudentIds.length !== studentIds.length) {
       return NextResponse.json(
@@ -191,10 +251,9 @@ export async function POST(req) {
       );
     }
 
-    // -----------------------------------------
-    // 6. Check if this subject result
-    //    already exists for any student
-    // -----------------------------------------
+    // =================================================
+    // 6. Check whether this subject was already uploaded
+    // =================================================
 
     const existingResults = await SemesterResult.find({
       semesterId,
@@ -210,7 +269,7 @@ export async function POST(req) {
           success: false,
           alreadyExists: true,
           message:
-            "Result for this subject has already been uploaded.",
+            "Result for this subject has already been uploaded for one or more students.",
           students: existingResults.map(
             (item) => item.studentId
           ),
@@ -219,12 +278,18 @@ export async function POST(req) {
       );
     }
 
-    // -----------------------------------------
-    // 7. Create / update semester result
-    // -----------------------------------------
+    // =================================================
+    // 7. Create bulk operations
+    // =================================================
 
     const operations = results.map((item) => {
       const mark = Number(item.mark);
+
+      // Calculate grade and GPA
+      const { grade, gpa } = calculateGradeAndGPA(
+        mark,
+        parsedMaxMarks
+      );
 
       return {
         updateOne: {
@@ -234,22 +299,47 @@ export async function POST(req) {
           },
 
           update: {
+            // -----------------------------------------
+            // Create document if student has no
+            // semester result yet
+            // -----------------------------------------
+
             $setOnInsert: {
               schoolId,
               semesterId,
               classId,
               studentId: item.studentId,
+
+              totalMarks: 0,
+              totalPossibleMarks: 0,
+              averageMarks: 0,
+              gpa: 0,
+              position: null,
+              status: "draft",
+              publishedAt: null,
             },
+
+            // -----------------------------------------
+            // Add this subject result
+            // -----------------------------------------
 
             $push: {
               subjects: {
                 subjectId,
+                subjectName: subjectName.trim(),
                 teacherId,
-                subjectName,
+
                 maxMarks: parsedMaxMarks,
                 passingMarks: parsedPassingMarks,
+
                 totalMarks: mark,
+
+                grade,
+                gpa,
+
                 status: "submitted",
+
+                remarks: "",
               },
             },
           },
@@ -259,28 +349,32 @@ export async function POST(req) {
       };
     });
 
-    // -----------------------------------------
-    // 8. Execute all operations
-    // -----------------------------------------
+    // =================================================
+    // 8. Execute bulk operation
+    // =================================================
 
     const bulkResult =
       await SemesterResult.bulkWrite(operations);
 
-    // -----------------------------------------
+    // =================================================
     // 9. Response
-    // -----------------------------------------
+    // =================================================
 
     return NextResponse.json(
       {
         success: true,
+
         message:
-          "Subject results uploaded successfully.",
+          `${subjectName} results uploaded successfully.`,
 
         data: {
           semesterId,
           subjectId,
+          subjectName,
           teacherId,
+
           studentsProcessed: results.length,
+
           createdOrUpdated:
             bulkResult.upsertedCount +
             bulkResult.modifiedCount,
@@ -290,13 +384,13 @@ export async function POST(req) {
     );
   } catch (error) {
     console.error(
-      "Upload semester result error:",
+      "❌ Upload semester subject result error:",
       error
     );
 
-    // -----------------------------------------
+    // =================================================
     // Duplicate key protection
-    // -----------------------------------------
+    // =================================================
 
     if (error.code === 11000) {
       return NextResponse.json(
@@ -310,11 +404,16 @@ export async function POST(req) {
       );
     }
 
+    // =================================================
+    // Internal error
+    // =================================================
+
     return NextResponse.json(
       {
         success: false,
         message:
-          "Failed to upload semester results.",
+          "Failed to upload semester subject results.",
+        error: error.message,
       },
       { status: 500 }
     );
