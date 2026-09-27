@@ -6,6 +6,7 @@ const homeworkSchema = new mongoose.Schema(
     classId: { type: mongoose.Schema.Types.ObjectId, ref: "Class", required: true },
     title: { type: String, required: true, trim: true },
     description: { type: String, required: true, trim: true },
+    teacherId:{type: String, required: true},
     dueDate: { type: Date, required: true },
   },
   { timestamps: true }

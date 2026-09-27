@@ -15,21 +15,30 @@ export async function GET(req) {
     const semesterId = searchParams.get("semesterId");
 
     console.log("=================================");
-    console.log("GET SEMESTER RESULT");
+    console.log("GET PUBLISHED SEMESTER RESULT");
     console.log("schoolId:", schoolId);
     console.log("studentId:", studentId);
     console.log("semesterId:", semesterId);
     console.log("=================================");
 
+    // -----------------------------------
+    // REQUIRED FIELDS
+    // -----------------------------------
+
     if (!schoolId || !studentId || !semesterId) {
       return NextResponse.json(
         {
           success: false,
-          message: "schoolId, studentId and semesterId are required.",
+          message:
+            "schoolId, studentId and semesterId are required.",
         },
         { status: 400 }
       );
     }
+
+    // -----------------------------------
+    // VALIDATE OBJECT IDS
+    // -----------------------------------
 
     if (
       !mongoose.Types.ObjectId.isValid(schoolId) ||
@@ -47,35 +56,54 @@ export async function GET(req) {
 
     console.log("IDs are valid.");
 
+    // -----------------------------------
+    // FIND ONLY PUBLISHED RESULT
+    // -----------------------------------
+
     const result = await SemesterResult.findOne({
       schoolId,
       studentId,
       semesterId,
+      status: "published",
     }).lean();
 
-    console.log("Database result:", result);
+    console.log("Published result:", result);
+
+    // -----------------------------------
+    // NO PUBLISHED RESULT
+    // -----------------------------------
 
     if (!result) {
       return NextResponse.json(
         {
           success: true,
-          message: "No result found.",
+          published: false,
+          message:
+            "Semester result has not been published yet.",
           data: null,
         },
         { status: 200 }
       );
     }
 
+    // -----------------------------------
+    // PUBLISHED RESULT FOUND
+    // -----------------------------------
+
     return NextResponse.json(
       {
         success: true,
-        message: "Semester result fetched successfully.",
+        published: true,
+        message:
+          "Semester result fetched successfully.",
         data: result,
       },
       { status: 200 }
     );
   } catch (error) {
-    console.error("❌ GET SEMESTER RESULT ERROR:");
+    console.error(
+      "❌ GET PUBLISHED SEMESTER RESULT ERROR:"
+    );
     console.error(error);
 
     return NextResponse.json(

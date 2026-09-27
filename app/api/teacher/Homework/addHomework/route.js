@@ -14,7 +14,8 @@ export async function POST(req) {
     const title = formData.get("title");
     const description = formData.get("description");
     const dueDate = formData.get("dueDate");
-
+    const teacherId= formData.get("teacherId")
+    
     // ✅ Validation
     if (!schoolId || !classId || !title || !description || !dueDate) {
       return NextResponse.json(
@@ -23,13 +24,13 @@ export async function POST(req) {
       );
     }
 
-    // ✅ Create homework in MongoDB
     const homework = await Homework.create({
       schoolId,
       classId,
       title,
       description,
       dueDate: new Date(dueDate),
+      teacherId
     });
 
     return NextResponse.json({
