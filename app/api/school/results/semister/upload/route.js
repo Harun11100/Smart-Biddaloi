@@ -18,6 +18,7 @@ export async function POST(req) {
       teacherId,
       semesterId,
       subjectId,
+      subjectName,
       maxMarks,
       passingMarks,
       results,
@@ -32,6 +33,7 @@ export async function POST(req) {
       !classId ||
       !teacherId ||
       !semesterId ||
+      !subjectName||
       !subjectId
     ) {
       return NextResponse.json(
@@ -244,6 +246,7 @@ export async function POST(req) {
               subjects: {
                 subjectId,
                 teacherId,
+                subjectName,
                 maxMarks: parsedMaxMarks,
                 passingMarks: parsedPassingMarks,
                 totalMarks: mark,
