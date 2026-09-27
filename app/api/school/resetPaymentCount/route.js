@@ -1,49 +1,55 @@
 import { NextResponse } from "next/server";
 import connectDb from "@/app/utils/db";
 import School from "@/app/model/School";
-import nodemailer from "nodemailer";
+import bcrypt from "bcryptjs"; // Optional: Use bcrypt if your passwords are hashed
 
 export async function POST(req) {
   try {
     await connectDb();
-    const { schoolId } = await req.json();
+    const { schoolId, password } = await req.json();
 
-    if (!schoolId) {
-      return NextResponse.json({ success: false, message: "Missing schoolId" }, { status: 400 });
+    // 1. Validate incoming data
+    if (!schoolId || !password) {
+      return NextResponse.json(
+        { success: false, message: "স্কুল আইডি এবং পাসওয়ার্ড প্রদান করুন।" },
+        { status: 400 }
+      );
     }
-    const school = await School.findById(schoolId);
-    if (!school || !school.email) {
-      return NextResponse.json({ success: false, message: "School not found or email missing" }, { status: 404 });
+
+    // 2. Find the school by ID (include password if hidden by default in Mongoose schema)
+    const school = await School.findById(schoolId).select("+password");
+
+    if (!school) {
+      return NextResponse.json(
+        { success: false, message: "স্কুল অ্যাকাউন্টটি খুঁজে পাওয়া যায়নি।" },
+        { status: 404 }
+      );
     }
 
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    // 3. Verify Password
+    // Note: If you store plain text passwords, use: const isPasswordValid = school.password === password;
+    const isPasswordValid = await bcrypt.compare(password, school.password);
 
-    // Store the code and expiry (5 minutes)
-    school.resetCode = verificationCode;
-    school.resetCodeExpiry = Date.now() + 5 * 60 * 1000;
+    if (!isPasswordValid) {
+      return NextResponse.json(
+        { success: false, message: "ভুল পাসওয়ার্ড! সঠিক পাসওয়ার্ড দিয়ে চেষ্টা করুন।" },
+        { status: 401 }
+      );
+    }
+
+    // 4. Reset the payment count
+    school.totalPaymentCount = 0;
     await school.save();
 
-    // Send email using Nodemailer
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS,
-      },
+    return NextResponse.json({
+      success: true,
+      message: "মাসিক পেমেন্ট গণনা সফলভাবে রিসেট করা হয়েছে।",
     });
-
-    await transporter.sendMail({
-      from: `"Smart School Manager" <${process.env.GMAIL_USER}>`,
-      to: school.email,
-      subject: "Reset Payment Count Verification Code",
-      text: `Your verification code is: ${verificationCode}`,
-      html: `<p>Your verification code is: <b>${verificationCode}</b></p>
-             <p>This code will expire in 5 minutes.</p>`,
-    });
-
-    return NextResponse.json({ success: true, message: "Verification code sent to email" });
   } catch (error) {
     console.error("Error in resetPaymentCount:", error);
-    return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: "সার্ভারে সমস্যা হয়েছে। আবার চেষ্টা করুন।" },
+      { status: 500 }
+    );
   }
 }
