@@ -6,6 +6,7 @@ import connectDb from "@/app/utils/db";
 
 import Class from "@/app/model/Class";
 import SemesterResult from "@/app/model/SemesterResult";
+import Student from "@/app/model/Student";
 
 export async function POST(req) {
   try {
@@ -23,11 +24,7 @@ export async function POST(req) {
     // Validate
     // =====================================================
 
-    if (
-      !schoolId ||
-      !semesterId ||
-      !classId
-    ) {
+    if (!schoolId || !semesterId || !classId) {
       return NextResponse.json(
         {
           success: false,
@@ -39,7 +36,7 @@ export async function POST(req) {
     }
 
     // =====================================================
-    // Find class
+    // Find Class
     // =====================================================
 
     const classData = await Class.findOne({
@@ -64,29 +61,29 @@ export async function POST(req) {
       Number(classData.studentCount) || 0;
 
     // =====================================================
-    // Get all student semester results
+    // Get All Student Semester Results
     // =====================================================
 
-    const results =
-      await SemesterResult.find({
-        classId,
-        semesterId,
-        schoolId,
-      }).lean();
+    const results = await SemesterResult.find({
+      classId,
+      semesterId,
+      schoolId,
+    }).lean();
 
     // =====================================================
-    // Check student count
+    // Check Student Count
     // =====================================================
 
-    if (
-      results.length !== expectedStudents
-    ) {
+    if (results.length !== expectedStudents) {
       return NextResponse.json(
         {
           success: false,
+
           message:
             "Cannot publish. Not all students have semester results.",
+
           expectedStudents,
+
           studentsWithResults:
             results.length,
         },
@@ -95,7 +92,7 @@ export async function POST(req) {
     }
 
     // =====================================================
-    // Check every student has all subjects
+    // Check Every Student Has All Subjects
     // =====================================================
 
     const incompleteStudents = [];
@@ -104,12 +101,13 @@ export async function POST(req) {
       const subjectCount =
         result.subjects?.length || 0;
 
-      if (
-        subjectCount !== expectedSubjects
-      ) {
+      if (subjectCount !== expectedSubjects) {
         incompleteStudents.push({
           studentId: result.studentId,
-          uploadedSubjects: subjectCount,
+
+          uploadedSubjects:
+            subjectCount,
+
           expectedSubjects,
         });
       }
@@ -130,14 +128,14 @@ export async function POST(req) {
     }
 
     // =====================================================
-    // Check subject statuses
+    // Check Subject Submission Status
     // =====================================================
 
     const unsubmittedStudents = [];
 
     for (const result of results) {
       const hasUnsubmittedSubject =
-        result.subjects.some(
+        result.subjects?.some(
           (subject) =>
             subject.status !== "submitted" &&
             subject.status !== "verified"
@@ -150,9 +148,7 @@ export async function POST(req) {
       }
     }
 
-    if (
-      unsubmittedStudents.length > 0
-    ) {
+    if (unsubmittedStudents.length > 0) {
       return NextResponse.json(
         {
           success: false,
@@ -168,19 +164,19 @@ export async function POST(req) {
     }
 
     // =====================================================
-    // Check already published
+    // Check Already Published
     // =====================================================
 
-    const alreadyPublished =
-      results.every(
-        (result) =>
-          result.status === "published"
-      );
+    const alreadyPublished = results.every(
+      (result) =>
+        result.status === "published"
+    );
 
     if (alreadyPublished) {
       return NextResponse.json(
         {
           success: false,
+
           message:
             "This class result has already been published.",
         },
@@ -189,7 +185,7 @@ export async function POST(req) {
     }
 
     // =====================================================
-    // Publish
+    // Publish Result
     // =====================================================
 
     const publishedAt = new Date();
@@ -210,6 +206,142 @@ export async function POST(req) {
       );
 
     // =====================================================
+    // 🔔 SEND PUSH NOTIFICATION
+    //
+    // Only students from THIS school + THIS class
+    // will receive the notification.
+    // =====================================================
+
+    const students = await Student.find({
+      schoolId,
+      classId,
+      expoToken: {
+        $exists: true,
+        $ne: "",
+      },
+    }).lean();
+
+    let notificationsSent = 0;
+    let notificationsFailed = 0;
+
+    // =====================================================
+    // Send Notifications in Batches
+    // =====================================================
+
+    const chunkSize = 50;
+
+    for (
+      let i = 0;
+      i < students.length;
+      i += chunkSize
+    ) {
+      const chunk = students.slice(
+        i,
+        i + chunkSize
+      );
+
+      const notificationPromises =
+        chunk.map(async (student) => {
+          try {
+            const response = await fetch(
+              "https://exp.host/--/api/v2/push/send",
+              {
+                method: "POST",
+
+                headers: {
+                  Accept:
+                    "application/json",
+
+                  "Content-Type":
+                    "application/json",
+                },
+
+                body: JSON.stringify({
+                  to: student.expoToken,
+
+                  sound: "default",
+
+                  title:
+                    "সেমিস্টার পরীক্ষার ফলাফল প্রকাশিত হয়েছে 🎓",
+
+                  body:
+                    "আপনার সেমিস্টার পরীক্ষার ফলাফল এখন অ্যাপে দেখা যাচ্ছে। বিস্তারিত ফলাফল দেখতে অ্যাপটি খুলুন। 📱",
+
+                  data: {
+                    type: "SEMESTER_RESULT",
+
+                    schoolId:
+                      schoolId.toString(),
+
+                    classId:
+                      classId.toString(),
+
+                    semesterId:
+                      semesterId.toString(),
+
+                    studentId:
+                      student._id.toString(),
+
+                    screen:
+                      "SemesterResult",
+                  },
+                }),
+              }
+            );
+
+            const responseData =
+              await response.json();
+
+            if (!response.ok) {
+              throw new Error(
+                responseData?.message ||
+                  "Expo notification request failed"
+              );
+            }
+
+            notificationsSent++;
+
+            return {
+              success: true,
+              studentId:
+                student._id.toString(),
+            };
+          } catch (error) {
+            notificationsFailed++;
+
+            console.warn(
+              `⚠️ Notification failed for student ${student._id}:`,
+              error.message
+            );
+
+            return {
+              success: false,
+
+              studentId:
+                student._id.toString(),
+
+              error: error.message,
+            };
+          }
+        });
+
+      await Promise.all(
+        notificationPromises
+      );
+
+      // Small delay between batches
+      if (
+        i + chunkSize <
+        students.length
+      ) {
+        await new Promise(
+          (resolve) =>
+            setTimeout(resolve, 1000)
+        );
+      }
+    }
+
+    // =====================================================
     // Response
     // =====================================================
 
@@ -228,6 +360,13 @@ export async function POST(req) {
           studentsPublished:
             updateResult.modifiedCount,
 
+          studentsWithExpoToken:
+            students.length,
+
+          notificationsSent,
+
+          notificationsFailed,
+
           publishedAt,
         },
       },
@@ -242,8 +381,10 @@ export async function POST(req) {
     return NextResponse.json(
       {
         success: false,
+
         message:
           "Failed to publish semester result.",
+
         error: error.message,
       },
       { status: 500 }
