@@ -6,20 +6,30 @@ export async function POST(req) {
   try {
     await connectDb();
 
-    // ✅ Parse FormData from request
-    const formData = await req.formData();
+    const body = await req.json();
 
-    const schoolId = formData.get("schoolId");
-    const classId = formData.get("classId");
-    const title = formData.get("title");
-    const description = formData.get("description");
-    const dueDate = formData.get("dueDate");
-    const teacherId= formData.get("teacherId")
-    
-    // ✅ Validation
-    if (!schoolId || !classId || !title || !description || !dueDate) {
+    const {
+      schoolId,
+      classId,
+      title,
+      description,
+      dueDate,
+      teacherId,
+    } = body;
+
+    if (
+      !schoolId ||
+      !classId ||
+      !title ||
+      !description ||
+      !dueDate ||
+      !teacherId
+    ) {
       return NextResponse.json(
-        { success: false, message: "Missing required fields" },
+        {
+          success: false,
+          message: "Missing required fields",
+        },
         { status: 400 }
       );
     }
@@ -30,7 +40,7 @@ export async function POST(req) {
       title,
       description,
       dueDate: new Date(dueDate),
-      teacherId
+      teacherId,
     });
 
     return NextResponse.json({
@@ -40,8 +50,12 @@ export async function POST(req) {
     });
   } catch (error) {
     console.error("Error uploading homework:", error);
+
     return NextResponse.json(
-      { success: false, message: "Server error" },
+      {
+        success: false,
+        message: "Server error",
+      },
       { status: 500 }
     );
   }
