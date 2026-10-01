@@ -1,78 +1,55 @@
-import Navbar from "@/app/components/LandingPage/Navbar";
-import Hero from "@/app/components/LandingPage/Hero";
-import Academics from "@/app/components/LandingPage/Academics";
-import Facilities from "@/app/components/LandingPage/Facilities";
-import Teachers from "@/app/components/LandingPage/Teachers";
-import { FadeInSection } from "@/app/components/LandingPage/FadeInSection";
-import Footer from "@/app/components/LandingPage/Footer";
-import About from "@/app/components/LandingPage/About";
-import MeritoriousStudents from "@/app/components/LandingPage/MeritoriusStudents";
+'use client';
+import React, { useState, useEffect } from "react";
+import Header from "./components/landing/Header";
+import HeroSection from "./components/landing/HeroSection";
+import AcademicsSection from "./components/landing/AcademicsSection";
+import FacilitiesSection from "./components/landing/FacilitiesSection";
+import MeritoriousSection from "./components/landing/MeritoriousSection";
+import TeachersSection from "./components/landing/TeachersSection";
+import Footer from "./components/landing/Footer";
 
-export default async function HomePage() {
+export default function App() {
+  const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState("home");
+
+  // Dynamic Scroll Listener
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 40);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // ScrollSpy logic for navigation highlighting
+  useEffect(() => {
+    const sections = document.querySelectorAll("section[id]");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    sections.forEach((s) => observer.observe(s));
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <main className="min-h-screen relative scroll-smooth">
-      {/* Navbar */}
-      <Navbar />
-
-      <section
-        id="home"
-      >
-        <FadeInSection>
-          <div className="px-0 md:px-12 lg:px-5 pb-12">
-            <Hero />
-          </div>
-        </FadeInSection>
-      </section>
-
-      {/* Academics Section */}
-      <section
-        id="academics"
-        className="py-12 md:py-20 px-4 sm:px-6 md:px-20 bg-gradient-to-r from-yellow-100 via-green-100 to-cyan-100"
-      >
-        <FadeInSection>
-          <Academics />
-        </FadeInSection>
-      </section>
-
-      {/* Facilities Section */}
-      <section
-        id="facilities"
-        className="py-12 md:py-20 px-4 sm:px-6 md:px-20 bg-gradient-to-r from-pink-50 via-purple-50 to-blue-50"
-      >
-        <FadeInSection>
-          <Facilities />
-        </FadeInSection>
-      </section>
-
-      {/* Meritorious Students Section */}
-      <section id="meritorious" className="py-12 md:py-20 px-4 sm:px-6 md:px-20">
-        <FadeInSection>
-          <MeritoriousStudents />
-        </FadeInSection>
-      </section>
-
-      {/* Teachers Section */}
-      <section
-        id="teachers"
-        className="py-12 md:py-20 px-4 sm:px-6 md:px-20 bg-gradient-to-r from-green-50 via-lime-50 to-yellow-50"
-      >
-        <FadeInSection>
-          <Teachers />
-        </FadeInSection>
-      </section>
-
-      {/* About Section */}
-      <section
-        id="about"
-        className="py-12 md:py-20 px-4 sm:px-6 md:px-20 bg-gradient-to-r from-green-50 via-lime-50 to-yellow-50"
-      >
-        <FadeInSection>
-          <About />
-        </FadeInSection>
-      </section>
-
-      {/* Footer */}
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased selection:bg-emerald-500 selection:text-white">
+      <Header scrolled={scrolled} activeSection={activeSection} />
+      <main>
+        <HeroSection />
+        <AcademicsSection />
+        <FacilitiesSection />
+        <MeritoriousSection />
+        <TeachersSection />
+      </main>
       <Footer />
-    </main>
+    </div>
   );
 }

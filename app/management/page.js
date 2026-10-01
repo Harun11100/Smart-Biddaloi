@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { MdSchool, MdAdminPanelSettings } from "react-icons/md";
 import { motion } from "framer-motion";
-import Navbar from "../components/LandingPage/Navbar";
+
 
 export default function AccountsPage() {
   const router = useRouter();
@@ -33,30 +33,17 @@ export default function AccountsPage() {
           transition={{ duration: 0.5 }}
           className="w-28 h-28 mx-auto mb-6 rounded-full shadow-md flex items-center justify-center"
         >
-          <Image src="/logo.png" alt="Logo" width={120} height={120} />
+          <Image src="/icon.png" alt="Logo" width={120} height={120} />
         </motion.div>
         <div>
           <h2 className="text-2xl sm:text-3xl md:text-2xl font-bold text-center text-blue-900 mb-6">
-            Welcome to Barenda F. Chan Academy
+            Welcome to Barenda sobuj kanon School & College Management Panel
           </h2>
         </div>
 
         <p className="text-gray-500 text-center mb-4">
           Login to Admin Panel
         </p>
-
-        {/* Teacher Button */}
-        {/* <motion.button
-          whileTap={{ scale: 0.97 }}
-          onClick={() => router.push("/auth/sign-in-as-teacher")}
-          className="flex items-center justify-center gap-2 w-full py-3 mb-4 rounded-xl text-white font-medium
-          bg-gradient-to-r from-[#4CA8FF] to-[#175FCC] shadow-md hover:shadow-lg hover:opacity-90 transition-all"
-        >
-          <MdSchool size={26} />
-          Teacher Login
-        </motion.button> */}
-
-        {/* Admin Button */}
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={() => router.push("/auth/sign-in-as-admin")}
@@ -71,7 +58,7 @@ export default function AccountsPage() {
       </motion.div>
 
       {/* Footer */}
-      <p className="text-gray-400 text-xs mt-6">© 2025 All rights reserved. Barenda F.Chan Academy</p>
+      <p className="text-gray-400 text-xs mt-6">© 2025 All rights reserved. Barenda sobuj kanon School & College</p>
     </div>
   );
 }

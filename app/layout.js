@@ -12,56 +12,78 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Barenda F.Chan Academy",
+  title: "বারেন্ডা সবুজ কানন স্কুল এন্ড কলেজ",
+
   description:
-    "A premier educational institution fostering excellence and holistic development.",
+    "বারেন্ডা সবুজ কানন স্কুল এন্ড কলেজ — মানসম্মত শিক্ষা, নৈতিক মূল্যবোধ, সৃজনশীলতা ও আধুনিক শিক্ষার মাধ্যমে শিক্ষার্থীদের উজ্জ্বল ভবিষ্যৎ গড়ে তোলার প্রত্যয়ে পরিচালিত একটি শিক্ষাপ্রতিষ্ঠান।",
+
   keywords: [
-    "Barenda F.Chan Academy",
+    "বারেন্ডা সবুজ কানন স্কুল এন্ড কলেজ",
+    "বারেন্ডা সবুজ কানন স্কুল",
+    "বারেন্ডা সবুজ কানন",
+    "Barenda Sabuj Kanan School and College",
+    "Barenda Sabuj Kanan School",
     "Barenda School",
-    "Barenda F Chan",
+    "School in Barenda",
+    "School in Kashimpur",
+    "School in Gazipur",
     "School in Bangladesh",
     "Quality Education",
     "Primary Education",
     "Secondary Education",
-    "Higher Secondary",
+    "Higher Secondary Education",
     "Meritorious Students",
     "Teachers",
     "Facilities",
     "Admissions",
   ],
+
   authors: [
     {
-      name: "Barenda F.Chan Academy",
-      url: "https://barendafchanacademy.com",
+      name: "বারেন্ডা সবুজ কানন স্কুল এন্ড কলেজ",
+      url: "https://barendasobujkanonschool.com",
     },
   ],
+
   openGraph: {
-    title: "Barenda F.Chan Academy",
+    title: "বারেন্ডা সবুজ কানন স্কুল এন্ড কলেজ",
+
     description:
-      "A premier educational institution fostering excellence and holistic development.",
+      "মানসম্মত শিক্ষা, নৈতিক মূল্যবোধ ও আধুনিক শিক্ষার মাধ্যমে শিক্ষার্থীদের উজ্জ্বল ভবিষ্যৎ গড়ে তোলা।",
+
     type: "website",
-    url: "https://barendafchanacademy.com",
+
+    url: "https://barendasobujkanonschool.com",
+
+    siteName: "বারেন্ডা সবুজ কানন স্কুল এন্ড কলেজ",
+
+    locale: "bn_BD",
+
     images: [
       {
-        url: "/image1.jpg",
+        url: "/icon.png",
         width: 1200,
         height: 630,
-        alt: "Barenda F.Chan Academy",
+        alt: "বারেন্ডা সবুজ কানন স্কুল এন্ড কলেজ",
       },
     ],
   },
+
   twitter: {
     card: "summary_large_image",
-    title: "Barenda F.Chan Academy",
+
+    title: "বারেন্ডা সবুজ কানন স্কুল এন্ড কলেজ",
+
     description:
-      "A premier educational institution fostering excellence and holistic development.",
-    images: ["/image2.jpg"],
+      "মানসম্মত শিক্ষা, নৈতিক মূল্যবোধ ও আধুনিক শিক্ষার মাধ্যমে শিক্ষার্থীদের উজ্জ্বল ভবিষ্যৎ গড়ে তোলা।",
+
+    images: ["/icon.png"],
   },
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="bn">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

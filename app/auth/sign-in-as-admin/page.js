@@ -6,6 +6,7 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { Phone, Lock, Eye, EyeOff, Loader2, ArrowRight, ShieldCheck } from "lucide-react";
 
 const validationSchema = Yup.object().shape({
   phone: Yup.string()
@@ -19,118 +20,112 @@ export default function OwnerLoginPage() {
 
   const [checkingStorage, setCheckingStorage] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const [otpModal, setOtpModal] = useState(false);
-  const [otp, setOtp] = useState("");
-  const [schoolData, setSchoolData] = useState(null);
-  const [verifying, setVerifying] = useState(false);
-
-  // Auto login
+  // Auto-login check
   useEffect(() => {
     const stored = localStorage.getItem("schoolDetails");
     if (stored) {
-      const school = JSON.parse(stored);
-      router.push(`/admin/${school.slug}`);
-      return;
+      try {
+        const school = JSON.parse(stored);
+        if (school?.slug) {
+          router.push(`/admin/${school.slug}`);
+          return;
+        }
+      } catch (err) {
+        localStorage.removeItem("schoolDetails");
+      }
     }
     setCheckingStorage(false);
-  }, []);
+  }, [router]);
 
+  // Handle direct login submission
   const onFormSubmit = async (values) => {
     setLoading(true);
+    setErrorMessage("");
+
     try {
       const res = await axios.post(`/api/school/login`, {
         phone: values.phone,
         password: values.password,
       });
 
-      setSchoolData(res.data.school);
-      setOtpModal(true);
+      if (res.data?.school) {
+        const school = res.data.school;
+        const token = res.data.token || res.data.accessToken || "";
+
+        // Save auth state directly
+        if (token) localStorage.setItem("auth_token", token);
+        localStorage.setItem("schoolDetails", JSON.stringify(school));
+
+        // Redirect immediately
+        router.push(`/admin/${school.slug}`);
+      } else {
+        setErrorMessage(res.data?.message || "Invalid credentials. Please try again.");
+      }
     } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
+      setErrorMessage(
+        err.response?.data?.message || "Login failed. Please check your network or credentials."
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const verifyLoginOtp = async () => {
-    if (!otp.trim()) return alert("Please enter the OTP code.");
-    setVerifying(true);
-
-    try {
-      const res = await axios.post(`/api/school/verifyLoginOtp`, {
-        schoolId: schoolData.schoolId,
-        loginOTP: otp,
-      });
-
-      if (res.data.success) {
-        localStorage.setItem("auth_token", res.data.token);
-        localStorage.setItem("schoolDetails", JSON.stringify(schoolData));
-
-        router.push(`/admin/${schoolData.slug}`);
-      } else {
-        alert("Invalid OTP! Try again.");
-      }
-    } catch (err) {
-      alert("Verification failed.");
-    } finally {
-      setVerifying(false);
-    }
-  };
-
-  if (checkingStorage)
+  // Fullscreen Loading State
+  if (checkingStorage) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-10 h-10 text-emerald-500 animate-spin" />
+          <p className="text-slate-400 text-xs font-medium tracking-wide">Checking authentication...</p>
+        </div>
       </div>
     );
+  }
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-100">
+    <div className="relative min-h-screen flex items-center justify-center bg-slate-950 px-4 overflow-hidden">
+      
+      {/* Background Decorative Ambient Glows */}
+      <div className="absolute -top-40 -left-40 w-96 h-96 bg-emerald-500/20 blur-[130px] rounded-full pointer-events-none" />
+      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-500/20 blur-[130px] rounded-full pointer-events-none" />
 
-      {/* OTP Modal */}
-      {otpModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center px-4">
-          <div className="bg-white p-8 rounded-xl shadow-xl w-[330px] text-center">
-            <h2 className="text-lg font-semibold mb-3">OTP Verification</h2>
-
-            <input
-              type="text"
-              maxLength={6}
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              className="p-3 border rounded-lg w-full text-center text-lg tracking-widest"
-              placeholder="Enter 6-digit OTP"
+      {/* Main Container Card */}
+      <div className="relative z-10 w-full max-w-md bg-slate-900/80 backdrop-blur-2xl border border-slate-800 p-8 sm:p-10 rounded-3xl shadow-2xl shadow-emerald-950/20">
+        
+        {/* Header Branding */}
+        <div className="flex flex-col items-center text-center space-y-3 mb-8">
+          <div className="p-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 shadow-inner">
+            <Image
+              src="/icon.png"
+              alt="School Logo"
+              width={42}
+              height={42}
+              className="object-contain"
+              priority
             />
+          </div>
 
-            <button
-              onClick={verifyLoginOtp}
-              disabled={verifying}
-              className={`w-full mt-4 py-2 rounded-lg text-white font-semibold transition 
-                ${verifying ? "bg-blue-400" : "bg-blue-600 hover:bg-blue-700"}`}
-            >
-              {verifying ? "Verifying..." : "Verify"}
-            </button>
-
-            <button
-              onClick={() => setOtpModal(false)}
-              className="mt-3 text-red-500 font-semibold hover:underline"
-            >
-              Cancel
-            </button>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+              Barenda F.Chan Academy
+            </h1>
+            <p className="text-xs text-slate-400 font-medium mt-1">
+              Admin Portal Access & Control Management
+            </p>
           </div>
         </div>
-      )}
 
-      {/* Login Card */}
-      <div className="bg-white p-10 rounded-xl shadow-2xl flex flex-col gap-5 w-[380px]">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Image src="/schoolicon.png" alt="" width={28} height={28} />
-           Barenda F.Chan Academy
-        </h1>
+        {/* Global Error Alert Banner */}
+        {errorMessage && (
+          <div className="mb-6 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-medium text-center animate-fadeIn">
+            {errorMessage}
+          </div>
+        )}
 
-        <h2 className="text-gray-500 text-sm">Sign in to your account</h2>
-
+        {/* Formik Form */}
         <Formik
           initialValues={{ phone: "", password: "" }}
           validationSchema={validationSchema}
@@ -144,60 +139,113 @@ export default function OwnerLoginPage() {
             errors,
             handleBlur,
           }) => (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               
-              {/* Phone */}
-              <div className="flex flex-col gap-1">
-                <label className="text-sm text-gray-600">Phone Number</label>
-                <input
-                  name="phone"
-                  type="text"
-                  value={values.phone}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className="p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-400 outline-none"
-                  placeholder="Enter phone number"
-                />
+              {/* Phone Input */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                  <Phone size={13} className="text-emerald-400" />
+                  <span>Phone Number</span>
+                </label>
+                <div className="relative">
+                  <input
+                    name="phone"
+                    type="text"
+                    maxLength={11}
+                    value={values.phone}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="e.g. 01712345678"
+                    className={`w-full bg-slate-950/60 border ${
+                      errors.phone && touched.phone
+                        ? "border-rose-500/80 focus:ring-rose-500/30"
+                        : "border-slate-800 focus:border-emerald-500/80 focus:ring-emerald-500/20"
+                    } text-white text-sm rounded-xl px-4 py-3 outline-none focus:ring-4 transition duration-200 placeholder:text-slate-600`}
+                  />
+                </div>
                 {errors.phone && touched.phone && (
-                  <p className="text-xs text-red-400">{errors.phone}</p>
+                  <p className="text-[11px] font-medium text-rose-400 mt-1">
+                    {errors.phone}
+                  </p>
                 )}
               </div>
 
-              {/* Password */}
-              <div className="flex flex-col gap-1">
-                <label className="text-sm text-gray-600">Password</label>
-                <input
-                  name="password"
-                  type="password"
-                  value={values.password}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className="p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-400 outline-none"
-                  placeholder="Enter password"
-                />
+              {/* Password Input */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                  <Lock size={13} className="text-emerald-400" />
+                  <span>Password</span>
+                </label>
+                <div className="relative">
+                  <input
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    value={values.password}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="••••••••"
+                    className={`w-full bg-slate-950/60 border ${
+                      errors.password && touched.password
+                        ? "border-rose-500/80 focus:ring-rose-500/30"
+                        : "border-slate-800 focus:border-emerald-500/80 focus:ring-emerald-500/20"
+                    } text-white text-sm rounded-xl pl-4 pr-11 py-3 outline-none focus:ring-4 transition duration-200 placeholder:text-slate-600`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition"
+                    aria-label="Toggle password visibility"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
                 {errors.password && touched.password && (
-                  <p className="text-xs text-red-400">{errors.password}</p>
+                  <p className="text-[11px] font-medium text-rose-400 mt-1">
+                    {errors.password}
+                  </p>
                 )}
               </div>
 
-              {/* Submit */}
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm p-3 transition"
+                className="w-full mt-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-sm font-bold shadow-lg shadow-emerald-900/30 hover:shadow-emerald-900/50 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
               >
-                {loading ? "Loading..." : "Sign In"}
+                {loading ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>Signing in...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Sign In to Admin</span>
+                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
               </button>
 
-              <p
-                onClick={() => router.push("/ResetPasswordForm")}
-                className="text-xs text-blue-600 hover:underline cursor-pointer text-center"
-              >
-                Forgot password? Reset from mobile app
-              </p>
+              {/* Forgot Password Link */}
+              <div className="pt-2 text-center">
+                <button
+                  type="button"
+                  onClick={() => router.push("/ResetPasswordForm")}
+                  className="text-xs text-slate-400 hover:text-emerald-400 transition underline underline-offset-4"
+                >
+                  Forgot password? Reset from mobile app
+                </button>
+              </div>
+
             </form>
           )}
         </Formik>
+
+        {/* Footer Security Badge */}
+        <div className="mt-8 pt-4 border-t border-slate-800/80 flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
+          <ShieldCheck size={13} className="text-emerald-500" />
+          <span>Encrypted Authorized Admin Console</span>
+        </div>
+
       </div>
     </div>
   );
