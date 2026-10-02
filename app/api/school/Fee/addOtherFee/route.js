@@ -21,14 +21,16 @@ export async function POST(req) {
       createdBy = null,
     } = body;
 
-    // -----------------------------------
-    // Validation
-    // -----------------------------------
+    // =====================================================
+    // VALIDATION
+    // =====================================================
+
     if (!schoolId || !studentId) {
       return NextResponse.json(
         {
           success: false,
-          message: "schoolId and studentId are required",
+          message:
+            "schoolId and studentId are required",
         },
         { status: 400 }
       );
@@ -56,19 +58,24 @@ export async function POST(req) {
 
     const feeAmount = Number(amount);
 
-    if (!feeAmount || feeAmount <= 0) {
+    if (
+      !Number.isFinite(feeAmount) ||
+      feeAmount <= 0
+    ) {
       return NextResponse.json(
         {
           success: false,
-          message: "Fee amount must be greater than 0",
+          message:
+            "Fee amount must be greater than 0",
         },
         { status: 400 }
       );
     }
 
-    // -----------------------------------
-    // Allowed fee types
-    // -----------------------------------
+    // =====================================================
+    // ALLOWED FEE TYPES
+    // =====================================================
+
     const allowedFeeTypes = [
       "exam",
       "admission",
@@ -91,9 +98,10 @@ export async function POST(req) {
       );
     }
 
-    // -----------------------------------
-    // Find student
-    // -----------------------------------
+    // =====================================================
+    // FIND STUDENT
+    // =====================================================
+
     const student = await Student.findOne({
       _id: studentId,
       schoolId,
@@ -109,123 +117,223 @@ export async function POST(req) {
       );
     }
 
-    // -----------------------------------
-    // Find student's fee collection
-    // -----------------------------------
-    let feeCollection = await FeeCollection.findOne({
-      schoolId,
-      studentId,
-    });
+    // =====================================================
+    // FINAL CLASS ID
+    // =====================================================
 
-    // -----------------------------------
-    // Create FeeCollection if it doesn't
-    // exist yet
-    // -----------------------------------
+    const finalClassId =
+      classId || student.classId || null;
+
+    // =====================================================
+    // FIND FEE COLLECTION
+    // =====================================================
+
+    let feeCollection =
+      await FeeCollection.findOne({
+        schoolId,
+        studentId,
+      });
+
+    let feeCollectionCreated = false;
+
+    // =====================================================
+    // CREATE FEE COLLECTION IF NOT EXISTS
+    // =====================================================
+
     if (!feeCollection) {
+      console.log(
+        `FeeCollection not found for student ${studentId}. Creating new record.`
+      );
+
+      // ---------------------------------------------------
+      // Student default fees
+      // ---------------------------------------------------
+
       const tuitionFee = Number(
-        student.tuitionFee || 0
+        student.tuitionFee ??
+          student.tutionFee ??
+          student.tutionFees ??
+          0
       );
 
       const coachingFee = Number(
-        student.coachingFee || 0
+        student.coachingFee ?? 0
       );
+
+      const otherMonthlyFee = Number(
+        student.otherMonthlyFee ?? 0
+      );
+
+      const totalMonthlyFees =
+        tuitionFee +
+        coachingFee +
+        otherMonthlyFee;
+
+      // ---------------------------------------------------
+      // Create FeeCollection
+      // ---------------------------------------------------
 
       feeCollection = new FeeCollection({
         schoolId,
+
+        classId: finalClassId,
+
         studentId,
 
         defaultFees: {
           tuitionFee,
+
           coachingFee,
-          otherMonthlyFee: 0,
-          totalMonthlyFee:
-            tuitionFee + coachingFee,
+
+          otherMonthlyFee,
+
+          totalMonthlyFees,
         },
 
         monthlyFees: [],
+
         otherFees: [],
+
         payments: [],
 
         advanceBalance: 0,
+
         totalPaid: 0,
+
         totalDue: 0,
       });
+
+      feeCollectionCreated = true;
     }
 
-    // -----------------------------------
-    // Make sure otherFees exists
-    // -----------------------------------
-    if (!feeCollection.otherFees) {
+    // =====================================================
+    // MAKE SURE ARRAYS EXIST
+    // =====================================================
+
+    if (!Array.isArray(feeCollection.monthlyFees)) {
+      feeCollection.monthlyFees = [];
+    }
+
+    if (!Array.isArray(feeCollection.otherFees)) {
       feeCollection.otherFees = [];
     }
 
-    // -----------------------------------
-    // Create other fee
-    // -----------------------------------
+    if (!Array.isArray(feeCollection.payments)) {
+      feeCollection.payments = [];
+    }
+
+    // =====================================================
+    // CREATE OTHER FEE
+    // =====================================================
+
     const newOtherFee = {
       feeType,
+
       title: title.trim(),
-      description: description.trim(),
+
+      description:
+        typeof description === "string"
+          ? description.trim()
+          : "",
+
       amount: feeAmount,
+
       paidAmount: 0,
+
       dueAmount: feeAmount,
+
       dueMonth: dueMonth || null,
+
       status: "unpaid",
+
       createdBy: createdBy || null,
     };
 
-    // -----------------------------------
-    // Add fee
-    // -----------------------------------
+    // =====================================================
+    // ADD OTHER FEE
+    // =====================================================
+
     feeCollection.otherFees.push(
       newOtherFee
     );
 
-    // -----------------------------------
-    // Recalculate total due
-    // -----------------------------------
+    // =====================================================
+    // RECALCULATE TOTAL DUE
+    // =====================================================
+
     const monthlyDue =
-      (feeCollection.monthlyFees || []).reduce(
+      feeCollection.monthlyFees.reduce(
         (total, fee) =>
-          total + Number(fee.dueAmount || 0),
+          total +
+          Number(fee.dueAmount || 0),
         0
       );
 
     const otherDue =
       feeCollection.otherFees.reduce(
         (total, fee) =>
-          total + Number(fee.dueAmount || 0),
+          total +
+          Number(fee.dueAmount || 0),
         0
       );
 
     feeCollection.totalDue =
       monthlyDue + otherDue;
 
-    // -----------------------------------
-    // Save
-    // -----------------------------------
+    // =====================================================
+    // TOTAL PAID
+    // =====================================================
+
+    // Do not change totalPaid here.
+    // Adding a fee does not mean the student has paid it.
+
+    feeCollection.totalPaid =
+      feeCollection.payments.reduce(
+        (total, payment) =>
+          total +
+          Number(payment.amount || 0),
+        0
+      );
+
+    // =====================================================
+    // SAVE
+    // =====================================================
+
     await feeCollection.save();
 
-    // Get the newly added fee
+    // =====================================================
+    // GET NEWLY ADDED FEE
+    // =====================================================
+
     const addedFee =
       feeCollection.otherFees[
         feeCollection.otherFees.length - 1
       ];
 
-    // -----------------------------------
-    // Response
-    // -----------------------------------
+    // =====================================================
+    // RESPONSE
+    // =====================================================
+
     return NextResponse.json(
       {
         success: true,
-        message: "Other fee added successfully",
+
+        message:
+          "Other fee added successfully",
+
+        feeCollectionCreated,
 
         fee: addedFee,
 
         feeCollection: {
           _id: feeCollection._id,
+
           schoolId:
             feeCollection.schoolId,
+
+          classId:
+            feeCollection.classId,
+
           studentId:
             feeCollection.studentId,
 
@@ -268,7 +376,10 @@ export async function POST(req) {
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to add other fee",
+
+        message:
+          "Failed to add other fee",
+
         error: error.message,
       },
       { status: 500 }
