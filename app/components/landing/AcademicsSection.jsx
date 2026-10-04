@@ -14,12 +14,7 @@ const PROGRAMS = [
     icon: GraduationCap,
     color: "from-blue-600 to-indigo-800",
   },
-  {
-    title: "উচ্চ মাধ্যমিক (একাদশ - দ্বাদশ)",
-    desc: "বিশ্ববিদ্যালয় ভর্তি পরীক্ষার প্রস্তুতি ও উচ্চশিক্ষার জন্য উপযুক্ত ক্যারিয়ার গাইডেন্স।",
-    icon: Award,
-    color: "from-amber-500 to-orange-700",
-  },
+
 ];
 
 export default function AcademicsSection() {
