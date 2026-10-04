@@ -3,9 +3,8 @@ import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 // --------------------------------------------------
-// Default Monthly Fee
+// Default Monthly Fee Configuration
 // --------------------------------------------------
-
 const DefaultFeeSchema = new Schema(
   {
     tuitionFee: {
@@ -13,19 +12,16 @@ const DefaultFeeSchema = new Schema(
       default: 0,
       min: 0,
     },
-
     coachingFee: {
       type: Number,
       default: 0,
       min: 0,
     },
-
     otherMonthlyFee: {
       type: Number,
       default: 0,
       min: 0,
     },
-
     totalMonthlyFee: {
       type: Number,
       default: 0,
@@ -36,75 +32,65 @@ const DefaultFeeSchema = new Schema(
 );
 
 // --------------------------------------------------
-// Monthly Fee
+// Monthly Fee Ledger Entry
 // --------------------------------------------------
-
 const MonthlyFeeSchema = new Schema(
   {
-    // Example: "2026-09"
+    // Example: "2026-10"
     monthKey: {
       type: String,
       required: true,
+      trim: true,
     },
-
     month: {
       type: Number,
       required: true,
       min: 1,
       max: 12,
     },
-
     year: {
       type: Number,
       required: true,
     },
-
     tuitionFee: {
       type: Number,
       default: 0,
       min: 0,
     },
-
     coachingFee: {
       type: Number,
       default: 0,
       min: 0,
     },
-
     otherMonthlyFee: {
       type: Number,
       default: 0,
       min: 0,
     },
-
     totalFee: {
       type: Number,
       required: true,
       min: 0,
     },
-
     paidAmount: {
       type: Number,
       default: 0,
       min: 0,
     },
-
     dueAmount: {
       type: Number,
       default: 0,
       min: 0,
     },
-
     status: {
       type: String,
       enum: ["unpaid", "partial", "paid"],
       default: "unpaid",
     },
-
-    // Optional note for this month's fee
     note: {
       type: String,
       default: "",
+      trim: true,
     },
   },
   {
@@ -114,9 +100,8 @@ const MonthlyFeeSchema = new Schema(
 );
 
 // --------------------------------------------------
-// Other / Additional Fee
+// Other / Additional Fee (Exam, Admission, Fines, etc.)
 // --------------------------------------------------
-
 const OtherFeeSchema = new Schema(
   {
     feeType: {
@@ -134,50 +119,41 @@ const OtherFeeSchema = new Schema(
       ],
       required: true,
     },
-
     title: {
       type: String,
       required: true,
       trim: true,
     },
-
     description: {
       type: String,
       default: "",
       trim: true,
     },
-
     amount: {
       type: Number,
       required: true,
       min: 0,
     },
-
     paidAmount: {
       type: Number,
       default: 0,
       min: 0,
     },
-
     dueAmount: {
       type: Number,
       default: 0,
       min: 0,
     },
-
-    // Which month this fee belongs to
     dueMonth: {
       type: String,
-      default: "",
-      // Example: "2026-10"
+      default: "", // Example: "2026-10"
+      trim: true,
     },
-
     status: {
       type: String,
       enum: ["unpaid", "partial", "paid"],
       default: "unpaid",
     },
-
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -191,20 +167,8 @@ const OtherFeeSchema = new Schema(
 );
 
 // --------------------------------------------------
-// Payment Allocation
+// Payment Allocation (Tracks which fee item got paid)
 // --------------------------------------------------
-// This tells us exactly where a payment was applied.
-//
-// Example:
-// September due      = ৳1000
-// October fee        = ৳1500
-// Student pays       = ৳2000
-//
-// Allocation:
-// September = ৳1000
-// October   = ৳1000
-// --------------------------------------------------
-
 const PaymentAllocationSchema = new Schema(
   {
     chargeType: {
@@ -212,36 +176,32 @@ const PaymentAllocationSchema = new Schema(
       enum: ["monthly", "other"],
       required: true,
     },
-
     chargeId: {
       type: Schema.Types.ObjectId,
       required: true,
     },
-
     monthKey: {
       type: String,
       default: "",
-      // Example: "2026-09"
+      trim: true,
     },
-
     amount: {
       type: Number,
       required: true,
       min: 0,
     },
-
     description: {
       type: String,
       default: "",
+      trim: true,
     },
   },
   { _id: false }
 );
 
 // --------------------------------------------------
-// Payment Transaction
+// Payment Transaction Record
 // --------------------------------------------------
-
 const PaymentSchema = new Schema(
   {
     receiptNumber: {
@@ -249,13 +209,17 @@ const PaymentSchema = new Schema(
       required: true,
       trim: true,
     },
-
+    // Optional digital payment gateway transaction ID (e.g. bKash TrxID)
+    trxId: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     amount: {
       type: Number,
       required: true,
       min: 0,
     },
-
     paymentMethod: {
       type: String,
       enum: [
@@ -268,32 +232,28 @@ const PaymentSchema = new Schema(
       ],
       default: "cash",
     },
-
     paymentDate: {
       type: Date,
       default: Date.now,
     },
-
-    // Exactly which fees this payment covered
     allocations: {
       type: [PaymentAllocationSchema],
       default: [],
     },
-
     note: {
       type: String,
       default: "",
+      trim: true,
     },
-
     collectedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
       default: null,
     },
-
     collectorName: {
       type: String,
       default: "",
+      trim: true,
     },
   },
   {
@@ -305,61 +265,52 @@ const PaymentSchema = new Schema(
 // --------------------------------------------------
 // Main Fee Collection Schema
 // --------------------------------------------------
-
 const FeeCollectionSchema = new Schema(
   {
-    studentId: {
-      type: Schema.Types.ObjectId,
-      ref: "Student",
-      required: true,
-      index: true,
-    },
-
     schoolId: {
       type: Schema.Types.ObjectId,
       ref: "School",
       required: true,
       index: true,
     },
-
-    // Current/default fee configuration
+    classId: {
+      type: Schema.Types.ObjectId,
+      ref: "Class",
+      default: null,
+      index: true, // Speeds up class-wise fee reports
+    },
+    studentId: {
+      type: Schema.Types.ObjectId,
+      ref: "Student",
+      required: true,
+      index: true,
+    },
     defaultFees: {
       type: DefaultFeeSchema,
       default: () => ({}),
     },
-
-    // Monthly fees
     monthlyFees: {
       type: [MonthlyFeeSchema],
       default: [],
     },
-
-    // Exam fees, admission fees, fines etc.
     otherFees: {
       type: [OtherFeeSchema],
       default: [],
     },
-
-    // Complete payment history
     payments: {
       type: [PaymentSchema],
       default: [],
     },
-
-    // Money paid in advance
     advanceBalance: {
       type: Number,
       default: 0,
       min: 0,
     },
-
-    // Cached totals for quick dashboard display
     totalPaid: {
       type: Number,
       default: 0,
       min: 0,
     },
-
     totalDue: {
       type: Number,
       default: 0,
@@ -371,14 +322,14 @@ const FeeCollectionSchema = new Schema(
   }
 );
 
-// --------------------------------------------------
-// One FeeCollection document per student per school
-// --------------------------------------------------
-
+// Unique compound index: One fee record per student per school
 FeeCollectionSchema.index(
   { schoolId: 1, studentId: 1 },
   { unique: true }
 );
+
+// Helper index to speed up month-specific ledger lookups
+FeeCollectionSchema.index({ "monthlyFees.monthKey": 1 });
 
 const FeeCollection =
   mongoose.models.FeeCollection ||

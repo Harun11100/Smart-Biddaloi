@@ -69,9 +69,7 @@ export async function POST(req) {
     }
 
     // Make sure allocations is an array
-    const paymentAllocationsInput = Array.isArray(
-      allocations
-    )
+    const paymentAllocationsInput = Array.isArray(allocations)
       ? allocations
       : [];
 
@@ -98,8 +96,7 @@ export async function POST(req) {
     // DETERMINE CLASS ID
     // =====================================================
 
-    const finalClassId =
-      classId || student.classId || null;
+    const finalClassId = classId || student.classId || null;
 
     // =====================================================
     // FIND OR CREATE FEE COLLECTION
@@ -121,7 +118,7 @@ export async function POST(req) {
         `FeeCollection not found for student ${studentId}. Creating new record.`
       );
 
-      // Student default fees
+      // Student default fees (handling tuition / tution spelling typos)
       const tuitionFee = Number(
         student.tuitionFee ??
           student.tutionFee ??
@@ -129,58 +126,39 @@ export async function POST(req) {
           0
       );
 
-      const coachingFee = Number(
-        student.coachingFee ?? 0
-      );
-
-      const otherMonthlyFee = Number(
-        student.otherMonthlyFee ?? 0
-      );
+      const coachingFee = Number(student.coachingFee ?? 0);
+      const otherMonthlyFee = Number(student.otherMonthlyFee ?? 0);
 
       const totalMonthlyFees =
-        tuitionFee +
-        coachingFee +
-        otherMonthlyFee;
+        tuitionFee + coachingFee + otherMonthlyFee;
 
       // ---------------------------------------------------
       // CURRENT MONTH
       // ---------------------------------------------------
 
       const now = new Date();
-
       const currentYear = now.getFullYear();
-
-      const currentMonthNumber =
-        now.getMonth() + 1;
-
-      const currentMonthName =
-        now.toLocaleString("en-US", {
-          month: "long",
-        });
+      const currentMonthNumber = now.getMonth() + 1; // 1 to 12
 
       const monthKey = `${currentYear}-${String(
         currentMonthNumber
       ).padStart(2, "0")}`;
 
       // ---------------------------------------------------
-      // CREATE INITIAL MONTHLY FEE
+      // CREATE INITIAL MONTHLY FEE MATCHING SCHEMA
       // ---------------------------------------------------
 
       const initialMonthlyFee = {
         monthKey,
-        month: currentMonthName,
+        month: currentMonthNumber, // FIX: Number enum (1-12)
         year: currentYear,
-
-        amount: totalMonthlyFees,
-
+        tuitionFee,
+        coachingFee,
+        otherMonthlyFee,
+        totalFee: totalMonthlyFees, // FIX: field is totalFee, not amount
         paidAmount: 0,
-
         dueAmount: totalMonthlyFees,
-
-        status:
-          totalMonthlyFees > 0
-            ? "unpaid"
-            : "paid",
+        status: totalMonthlyFees > 0 ? "unpaid" : "paid",
       };
 
       // ---------------------------------------------------
@@ -189,44 +167,25 @@ export async function POST(req) {
 
       feeCollection = new FeeCollection({
         schoolId,
-
         classId: finalClassId,
-
         studentId,
-
         defaultFees: {
           tuitionFee,
-
           coachingFee,
-
           otherMonthlyFee,
-
-          totalMonthlyFees,
+          totalMonthlyFee: totalMonthlyFees,
         },
-
         monthlyFees:
-          totalMonthlyFees > 0
-            ? [initialMonthlyFee]
-            : [],
-
+          totalMonthlyFees > 0 ? [initialMonthlyFee] : [],
         otherFees: [],
-
         payments: [],
-
         advanceBalance: 0,
-
         totalPaid: 0,
-
         totalDue: totalMonthlyFees,
       });
 
       await feeCollection.save();
-
       feeCollectionCreated = true;
-
-      console.log(
-        `FeeCollection created successfully: ${feeCollection._id}`
-      );
     }
 
     // =====================================================
@@ -236,11 +195,9 @@ export async function POST(req) {
     if (!Array.isArray(feeCollection.monthlyFees)) {
       feeCollection.monthlyFees = [];
     }
-
     if (!Array.isArray(feeCollection.otherFees)) {
       feeCollection.otherFees = [];
     }
-
     if (!Array.isArray(feeCollection.payments)) {
       feeCollection.payments = [];
     }
@@ -252,18 +209,9 @@ export async function POST(req) {
     let allocationTotal = 0;
 
     for (const allocation of paymentAllocationsInput) {
-      const allocationAmount = Number(
-        allocation?.amount || 0
-      );
+      const allocationAmount = Number(allocation?.amount || 0);
 
-      // Ignore zero/negative allocation
-      if (allocationAmount <= 0) {
-        continue;
-      }
-
-      // -----------------------------------------------
-      // Validate charge type
-      // -----------------------------------------------
+      if (allocationAmount <= 0) continue;
 
       if (
         allocation.chargeType !== "monthly" &&
@@ -272,23 +220,17 @@ export async function POST(req) {
         return NextResponse.json(
           {
             success: false,
-            message:
-              "Invalid allocation chargeType",
+            message: "Invalid allocation chargeType",
           },
           { status: 400 }
         );
       }
 
-      // -----------------------------------------------
-      // Validate charge ID
-      // -----------------------------------------------
-
       if (!allocation.chargeId) {
         return NextResponse.json(
           {
             success: false,
-            message:
-              "Allocation chargeId is required",
+            message: "Allocation chargeId is required",
           },
           { status: 400 }
         );
@@ -296,10 +238,6 @@ export async function POST(req) {
 
       allocationTotal += allocationAmount;
     }
-
-    // =====================================================
-    // ALLOCATION TOTAL CANNOT EXCEED PAYMENT
-    // =====================================================
 
     if (allocationTotal > paymentAmount) {
       return NextResponse.json(
@@ -323,259 +261,123 @@ export async function POST(req) {
     // =====================================================
 
     const paymentAllocations = [];
-
     let remainingPayment = paymentAmount;
 
     for (const allocation of paymentAllocationsInput) {
-      if (remainingPayment <= 0) {
-        break;
-      }
+      if (remainingPayment <= 0) break;
 
-      let requestedAmount = Number(
-        allocation?.amount || 0
-      );
+      let requestedAmount = Number(allocation?.amount || 0);
+      if (requestedAmount <= 0) continue;
 
-      if (requestedAmount <= 0) {
-        continue;
-      }
+      requestedAmount = Math.min(requestedAmount, remainingPayment);
 
-      // Never allocate more than remaining payment
-      requestedAmount = Math.min(
-        requestedAmount,
-        remainingPayment
-      );
-
-      // =================================================
+      // ---------------------------------------------------
       // MONTHLY FEE
-      // =================================================
-
-      if (
-        allocation.chargeType === "monthly"
-      ) {
-        const monthlyFee =
-          feeCollection.monthlyFees.find(
-            (item) =>
-              item._id?.toString() ===
-              allocation.chargeId.toString()
-          );
+      // ---------------------------------------------------
+      if (allocation.chargeType === "monthly") {
+        const monthlyFee = feeCollection.monthlyFees.find(
+          (item) =>
+            item._id?.toString() === allocation.chargeId?.toString()
+        );
 
         if (!monthlyFee) {
           return NextResponse.json(
             {
               success: false,
-              message:
-                `Monthly fee not found: ${allocation.chargeId}`,
+              message: `Monthly fee not found: ${allocation.chargeId}`,
             },
             { status: 404 }
           );
         }
 
-        const currentDue = Number(
-          monthlyFee.dueAmount || 0
-        );
+        const currentDue = Number(monthlyFee.dueAmount || 0);
+        if (currentDue <= 0) continue;
 
-        // Already fully paid
-        if (currentDue <= 0) {
-          continue;
-        }
-
-        // ---------------------------------------------
-        // Calculate amount to apply
-        // ---------------------------------------------
-
-        const appliedAmount = Math.min(
-          requestedAmount,
-          currentDue
-        );
-
-        // ---------------------------------------------
-        // Update paid amount
-        // ---------------------------------------------
+        const appliedAmount = Math.min(requestedAmount, currentDue);
 
         monthlyFee.paidAmount =
-          Number(monthlyFee.paidAmount || 0) +
-          appliedAmount;
-
-        // ---------------------------------------------
-        // Update due amount
-        // ---------------------------------------------
-
-        monthlyFee.dueAmount =
-          currentDue - appliedAmount;
-
-        // Prevent negative value
-        if (monthlyFee.dueAmount < 0) {
-          monthlyFee.dueAmount = 0;
-        }
-
-        // ---------------------------------------------
-        // Update status
-        // ---------------------------------------------
+          Number(monthlyFee.paidAmount || 0) + appliedAmount;
+        monthlyFee.dueAmount = Math.max(0, currentDue - appliedAmount);
 
         if (monthlyFee.dueAmount === 0) {
           monthlyFee.status = "paid";
-        } else if (
-          Number(monthlyFee.paidAmount || 0) > 0
-        ) {
+        } else if (Number(monthlyFee.paidAmount || 0) > 0) {
           monthlyFee.status = "partial";
         } else {
           monthlyFee.status = "unpaid";
         }
 
-        // ---------------------------------------------
-        // Add allocation record
-        // ---------------------------------------------
-
         paymentAllocations.push({
           chargeType: "monthly",
-
           chargeId: monthlyFee._id,
-
-          monthKey:
-            monthlyFee.monthKey || null,
-
+          monthKey: monthlyFee.monthKey || "",
           amount: appliedAmount,
-
           description:
             allocation.description ||
-            `${monthlyFee.month || ""} ${
-              monthlyFee.year || ""
-            }`.trim(),
+            `Month ${monthlyFee.month} ${monthlyFee.year}`,
         });
-
-        // ---------------------------------------------
-        // Reduce remaining payment
-        // ---------------------------------------------
 
         remainingPayment -= appliedAmount;
       }
 
-      // =================================================
+      // ---------------------------------------------------
       // OTHER FEE
-      // =================================================
-
-      if (
-        allocation.chargeType === "other"
-      ) {
-        const otherFee =
-          feeCollection.otherFees.find(
-            (item) =>
-              item._id?.toString() ===
-              allocation.chargeId.toString()
-          );
+      // ---------------------------------------------------
+      if (allocation.chargeType === "other") {
+        const otherFee = feeCollection.otherFees.find(
+          (item) =>
+            item._id?.toString() === allocation.chargeId?.toString()
+        );
 
         if (!otherFee) {
           return NextResponse.json(
             {
               success: false,
-              message:
-                `Other fee not found: ${allocation.chargeId}`,
+              message: `Other fee not found: ${allocation.chargeId}`,
             },
             { status: 404 }
           );
         }
 
-        const currentDue = Number(
-          otherFee.dueAmount || 0
-        );
+        const currentDue = Number(otherFee.dueAmount || 0);
+        if (currentDue <= 0) continue;
 
-        // Already fully paid
-        if (currentDue <= 0) {
-          continue;
-        }
-
-        // ---------------------------------------------
-        // Calculate amount to apply
-        // ---------------------------------------------
-
-        const appliedAmount = Math.min(
-          requestedAmount,
-          currentDue
-        );
-
-        // ---------------------------------------------
-        // Update paid amount
-        // ---------------------------------------------
+        const appliedAmount = Math.min(requestedAmount, currentDue);
 
         otherFee.paidAmount =
-          Number(otherFee.paidAmount || 0) +
-          appliedAmount;
-
-        // ---------------------------------------------
-        // Update due amount
-        // ---------------------------------------------
-
-        otherFee.dueAmount =
-          currentDue - appliedAmount;
-
-        if (otherFee.dueAmount < 0) {
-          otherFee.dueAmount = 0;
-        }
-
-        // ---------------------------------------------
-        // Update status
-        // ---------------------------------------------
+          Number(otherFee.paidAmount || 0) + appliedAmount;
+        otherFee.dueAmount = Math.max(0, currentDue - appliedAmount);
 
         if (otherFee.dueAmount === 0) {
           otherFee.status = "paid";
-        } else if (
-          Number(otherFee.paidAmount || 0) > 0
-        ) {
+        } else if (Number(otherFee.paidAmount || 0) > 0) {
           otherFee.status = "partial";
         } else {
           otherFee.status = "unpaid";
         }
 
-        // ---------------------------------------------
-        // Add allocation record
-        // ---------------------------------------------
-
         paymentAllocations.push({
           chargeType: "other",
-
           chargeId: otherFee._id,
-
-          monthKey:
-            otherFee.dueMonth || null,
-
+          monthKey: otherFee.dueMonth || "",
           amount: appliedAmount,
-
           description:
-            allocation.description ||
-            otherFee.title ||
-            "Other Fee",
+            allocation.description || otherFee.title || "Other Fee",
         });
-
-        // ---------------------------------------------
-        // Reduce remaining payment
-        // ---------------------------------------------
 
         remainingPayment -= appliedAmount;
       }
     }
 
     // =====================================================
-    // REMAINING PAYMENT = ADVANCE
+    // REMAINING PAYMENT -> ADVANCE BALANCE
+    // FIX: Do NOT add "advance" to paymentAllocations array
+    // since PaymentAllocationSchema enum only accepts ["monthly", "other"]
     // =====================================================
 
     if (remainingPayment > 0) {
       feeCollection.advanceBalance =
-        Number(
-          feeCollection.advanceBalance || 0
-        ) + remainingPayment;
-
-      paymentAllocations.push({
-        chargeType: "advance",
-
-        chargeId: null,
-
-        monthKey: null,
-
-        amount: remainingPayment,
-
-        description: "Advance payment",
-      });
-
+        Number(feeCollection.advanceBalance || 0) + remainingPayment;
       remainingPayment = 0;
     }
 
@@ -587,70 +389,38 @@ export async function POST(req) {
 
     const paymentRecord = {
       receiptNumber,
-
       amount: paymentAmount,
-
       paymentMethod: finalPaymentMethod,
-
       paymentDate,
-
       allocations: paymentAllocations,
-
       note,
-
       collectedBy,
-
       collectorName,
     };
 
-    feeCollection.payments.push(
-      paymentRecord
+    feeCollection.payments.push(paymentRecord);
+
+    // =====================================================
+    // RECALCULATE TOTALS
+    // =====================================================
+
+    const totalPaid = feeCollection.payments.reduce(
+      (total, payment) => total + Number(payment.amount || 0),
+      0
     );
 
-    // =====================================================
-    // RECALCULATE TOTAL PAID
-    // =====================================================
+    const monthlyDue = feeCollection.monthlyFees.reduce(
+      (total, fee) => total + Number(fee.dueAmount || 0),
+      0
+    );
 
-    const totalPaid =
-      feeCollection.payments.reduce(
-        (total, payment) =>
-          total +
-          Number(payment.amount || 0),
-        0
-      );
-
-    // =====================================================
-    // RECALCULATE MONTHLY DUE
-    // =====================================================
-
-    const monthlyDue =
-      feeCollection.monthlyFees.reduce(
-        (total, fee) =>
-          total +
-          Number(fee.dueAmount || 0),
-        0
-      );
-
-    // =====================================================
-    // RECALCULATE OTHER FEE DUE
-    // =====================================================
-
-    const otherDue =
-      feeCollection.otherFees.reduce(
-        (total, fee) =>
-          total +
-          Number(fee.dueAmount || 0),
-        0
-      );
-
-    // =====================================================
-    // UPDATE TOTALS
-    // =====================================================
+    const otherDue = feeCollection.otherFees.reduce(
+      (total, fee) => total + Number(fee.dueAmount || 0),
+      0
+    );
 
     feeCollection.totalPaid = totalPaid;
-
-    feeCollection.totalDue =
-      monthlyDue + otherDue;
+    feeCollection.totalDue = monthlyDue + otherDue;
 
     // =====================================================
     // SAVE
@@ -665,79 +435,39 @@ export async function POST(req) {
     return NextResponse.json(
       {
         success: true,
-
         message: feeCollectionCreated
           ? "Fee collection created and payment collected successfully"
           : "Payment collected successfully",
-
         feeCollectionCreated,
-
         payment: {
           receiptNumber,
-
           amount: paymentAmount,
-
-          paymentMethod:
-            finalPaymentMethod,
-
+          paymentMethod: finalPaymentMethod,
           paymentDate,
-
-          allocations:
-            paymentAllocations,
+          allocations: paymentAllocations,
         },
-
         feeCollection: {
           _id: feeCollection._id,
-
-          studentId:
-            feeCollection.studentId,
-
-          classId:
-            feeCollection.classId,
-
-          defaultFees:
-            feeCollection.defaultFees,
-
-          monthlyFees:
-            feeCollection.monthlyFees,
-
-          otherFees:
-            feeCollection.otherFees,
-
-          payments:
-            feeCollection.payments,
-
-          advanceBalance:
-            Number(
-              feeCollection.advanceBalance || 0
-            ),
-
-          totalPaid:
-            Number(
-              feeCollection.totalPaid || 0
-            ),
-
-          totalDue:
-            Number(
-              feeCollection.totalDue || 0
-            ),
+          studentId: feeCollection.studentId,
+          classId: feeCollection.classId,
+          defaultFees: feeCollection.defaultFees,
+          monthlyFees: feeCollection.monthlyFees,
+          otherFees: feeCollection.otherFees,
+          payments: feeCollection.payments,
+          advanceBalance: Number(feeCollection.advanceBalance || 0),
+          totalPaid: Number(feeCollection.totalPaid || 0),
+          totalDue: Number(feeCollection.totalDue || 0),
         },
       },
       { status: 200 }
     );
   } catch (error) {
-    console.error(
-      "COLLECT PAYMENT ERROR:",
-      error
-    );
+    console.error("COLLECT PAYMENT ERROR:", error);
 
     return NextResponse.json(
       {
         success: false,
-
-        message:
-          "Failed to collect payment",
-
+        message: "Failed to collect payment",
         error: error.message,
       },
       { status: 500 }
