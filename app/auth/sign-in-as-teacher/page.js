@@ -130,8 +130,8 @@ export default function TeacherLoginPage() {
       {/* Login Card */}
       <div className="bg-white p-12 rounded-xl shadow-2xl flex flex-col gap-4 w-[380px]">
         <h1 className="text-xl font-bold flex items-center gap-2">
-          <Image src="/Schoolicon.png" alt="" width={24} height={24} />
-          Barenda F.Chan Academy
+          <Image src="/icon.png" alt="" width={24} height={24} />
+          Barenda Sobuj Kanon School & College
         </h1>
         <h2 className="text-gray-400 text-sm">Login to your account</h2>
 

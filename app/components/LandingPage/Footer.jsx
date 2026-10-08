@@ -21,8 +21,8 @@ export default function Footer() {
         <div>
          <div className=" justify-center flex mb-4">
                 <Image
-                  src="/logo.png"
-                  alt="Logo"
+                  src="/icon.png"
+                  alt="Icon"
                   width={80}
                   height={80}
                   className=" object-contain"

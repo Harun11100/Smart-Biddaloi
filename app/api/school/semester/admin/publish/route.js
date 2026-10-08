@@ -185,25 +185,83 @@ export async function POST(req) {
     }
 
     // =====================================================
-    // Publish Result
+    // Calculate Total Marks & Publish
     // =====================================================
 
     const publishedAt = new Date();
 
-    const updateResult =
-      await SemesterResult.updateMany(
+    let studentsPublished = 0;
+
+    for (const result of results) {
+      // ---------------------------------------------------
+      // Calculate Total Obtained Marks
+      // ---------------------------------------------------
+
+      const totalMarks =
+        (result.subjects || []).reduce(
+          (sum, subject) => {
+            return (
+              sum +
+              (Number(subject.totalMarks) || 0)
+            );
+          },
+          0
+        );
+
+      // ---------------------------------------------------
+      // Calculate Total Possible Marks
+      // ---------------------------------------------------
+
+      const totalPossibleMarks =
+        (result.subjects || []).reduce(
+          (sum, subject) => {
+            return (
+              sum +
+              (Number(subject.maxMarks) || 0)
+            );
+          },
+          0
+        );
+
+      // ---------------------------------------------------
+      // Calculate Average Marks
+      // ---------------------------------------------------
+
+      const averageMarks =
+        totalPossibleMarks > 0
+          ? Number(
+              (
+                (totalMarks /
+                  totalPossibleMarks) *
+                100
+              ).toFixed(2)
+            )
+          : 0;
+
+      // ---------------------------------------------------
+      // Update Student Result
+      // ---------------------------------------------------
+
+      await SemesterResult.updateOne(
         {
+          _id: result._id,
           classId,
           semesterId,
           schoolId,
         },
         {
           $set: {
+            totalMarks,
+            totalPossibleMarks,
+            averageMarks,
             status: "published",
             publishedAt,
           },
         }
       );
+
+      studentsPublished++;
+    }
 
     // =====================================================
     // 🔔 SEND PUSH NOTIFICATION
@@ -303,6 +361,7 @@ export async function POST(req) {
 
             return {
               success: true,
+
               studentId:
                 student._id.toString(),
             };
@@ -357,8 +416,7 @@ export async function POST(req) {
 
           semesterId,
 
-          studentsPublished:
-            updateResult.modifiedCount,
+          studentsPublished,
 
           studentsWithExpoToken:
             students.length,

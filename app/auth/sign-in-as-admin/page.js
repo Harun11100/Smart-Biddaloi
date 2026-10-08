@@ -110,7 +110,7 @@ export default function OwnerLoginPage() {
 
           <div>
             <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-              Barenda F.Chan Academy
+              Barenda Sabuj Kanan School & College 
             </h1>
             <p className="text-xs text-slate-400 font-medium mt-1">
               Admin Portal Access & Control Management
