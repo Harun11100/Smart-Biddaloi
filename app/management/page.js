@@ -33,7 +33,7 @@ export default function AccountsPage() {
           transition={{ duration: 0.5 }}
           className="w-28 h-28 mx-auto mb-6 rounded-full shadow-md flex items-center justify-center"
         >
-          <Image src="/icon.png" alt="Logo" width={120} height={120} />
+          <Image src="/icon.png" alt="icon" width={120} height={120} />
         </motion.div>
         <div>
           <h2 className="text-2xl sm:text-3xl md:text-2xl font-bold text-center text-blue-900 mb-6">

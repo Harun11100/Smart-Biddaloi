@@ -52,8 +52,8 @@ export default function Layout({ children }) {
                    className="flex flex-col items-center gap-2 lg:gap-3"
                  >
                    <Image
-                     src="/logo.png"
-                     alt="logo"
+                     src="/icon.png"
+                     alt="icon"
                      width={48}
                      height={48}
                      className="object-contain"
@@ -61,7 +61,7 @@ export default function Layout({ children }) {
        
                    {/* School Name - only show on large & medium */}
                    <span className="hidden lg:block text-center font-bold text-gray-800 text-sm lg:text-lg">
-                     Barenda F.chan academy
+                     Barenda Sobuj Kanon School & College
                    </span>
                  </Link>
                </div>
@@ -77,7 +77,7 @@ export default function Layout({ children }) {
       <main className="flex-1 flex flex-col overflow-y-auto">
              {/* Sticky Navbar */}
               <div className="sticky top-0 z-30 bg-white">
-                <Navbar admin={schoolData.principalName} />
+                <Navbar />
               </div>
       
               {/* Page Content */}
