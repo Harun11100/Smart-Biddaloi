@@ -10,7 +10,6 @@ const StudentForm = dynamic(() => import("./forms/StudentForm"), { loading: () =
 const SubjectForm = dynamic(() => import("./forms/SubjectForm"), { loading: () => <p>Loading...</p> });
 const NoticeForm = dynamic(() => import("./forms/NoticeForm"), { loading: () => <p>Loading...</p> });
 const HomeworkForm = dynamic(() => import("./forms/HomeworkForm"), { loading: () => <p>Loading...</p> });
-const ResultUploadForm = dynamic(() => import("./forms/ResultUploadForm"), { loading: () => <p>Loading...</p>})
 
 const FormModal = ({ table, schoolId, type, data, onSuccess ,studentId, classId}) => {
   const [open, setOpen] = useState(false);
@@ -109,14 +108,6 @@ const FormModal = ({ table, schoolId, type, data, onSuccess ,studentId, classId}
                     classId={classId}
                   />
 
-                )}
-                {table === "result" && (type === "create" || type === "update") && (
-                  <ResultUploadForm
-                    type={type}
-                    data={data}
-                    schoolId={schoolId}
-                    studentId={studentId}
-                  />
                 )}
 
               </div>

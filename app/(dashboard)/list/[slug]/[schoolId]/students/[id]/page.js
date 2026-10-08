@@ -4,7 +4,7 @@ import StudentClient from "./StudentDetails";
 import mongoose from "mongoose";
 
 export default async function SingleStudentPage({ params }) {
-  const {id} = params;
+  const {id} = await params;
 
   // Connect to DB
   await connectDb();
@@ -19,5 +19,5 @@ export default async function SingleStudentPage({ params }) {
   }
 
   // Pass the student data to client component
-  return <StudentClient student={JSON.parse(JSON.stringify(student))} />;
+  return <StudentClient student={JSON.parse(JSON.stringify(student))} schoolId={student.schoolId} />;
 }

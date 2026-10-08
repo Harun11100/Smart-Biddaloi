@@ -4,7 +4,8 @@ import Class from "@/app/model/Class";
 import StudentListClient from "./StudentListClient";
 
 export default async function StudentListPage({ params }) {
-  const { slug, schoolId, classId } = params;
+  const { slug, schoolId, classId } =  await params;
+
 
   if (!slug || !schoolId) {
     return <div className="p-6 text-red-500">School ID is required</div>;
@@ -26,12 +27,14 @@ export default async function StudentListPage({ params }) {
     _id: std._id.toString(),
   }));
 
+
+
   return (
     <StudentListClient
       students={serializableStudents}
       schoolId={schoolId}
       classId={classId}
-      clasName={classData.className}
+      className={classData.className}
       sectionName={classData.sectionName}
       slug={slug}
     />

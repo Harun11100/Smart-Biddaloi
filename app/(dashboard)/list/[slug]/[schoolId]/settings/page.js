@@ -3,7 +3,7 @@ import School from "@/app/model/School";
 import SchoolSettingsClientsPage from "./SettingsCilent";
 
 export default async function SettingsPage({ params }) {
-  const { slug, schoolId } = params;
+  const { slug, schoolId } = await params;
 
   // Validation: slug & schoolId
   if (!slug || !schoolId) {

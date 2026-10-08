@@ -4,15 +4,17 @@ import FormModal from "@/app/components/FormModal";
 import Performance from "@/app/components/Performance";
 import Image from "next/image";
 import Link from "next/link";
+import ResultModal from "@/app/components/ResultModal";
 
-export default function StudentClient({ student }) {
+export default function StudentClient({ student, schoolId }) {
   const attendanceTotal =
     student.totalPresentDays?.reduce((sum, m) => sum + (m.days || 0), 0) || 0;
 
   return (
-    <div className="flex-1 p-6 flex flex-col gap-6 xl:flex-row bg-slate-50">
-      {/* LEFT */}
+    <div className="flex-1 p-6 flex flex-col gap-6 xl:flex-row bg-slate-50 min-h-screen">
+      {/* LEFT COLUMN */}
       <div className="w-full xl:w-2/3 flex flex-col gap-6">
+        
         {/* PROFILE CARD */}
         <div className="bg-white/70 backdrop-blur-xl border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-lg transition">
           <div className="flex flex-col lg:flex-row gap-6">
@@ -52,21 +54,17 @@ export default function StudentClient({ student }) {
 
               {/* META */}
               <div className="grid grid-cols-2 gap-3 mt-2">
-            {/* Row 1 */}
-            <Info
-              icon="/user.png"
-              value={`Guardian: ${student.guardianName || "N/A"}`}
-            />
-            <Info
-              icon="/phone.png"
-              value={`Phone: ${student.guardianPhone || "N/A"}`}
-            />
-
-            {/* Row 2 */}
-            <Info icon="/blood.png" value={student.bloodGroup} />
-            <Info icon="/gender.png" value={student.gender} />
-          </div>
-
+                <Info
+                  icon="/user.png"
+                  value={`Guardian: ${student.guardianName || "N/A"}`}
+                />
+                <Info
+                  icon="/phone.png"
+                  value={`Phone: ${student.guardianPhone || "N/A"}`}
+                />
+                <Info icon="/blood.png" value={student.bloodGroup} />
+                <Info icon="/gender.png" value={student.gender} />
+              </div>
             </div>
           </div>
         </div>
@@ -87,8 +85,53 @@ export default function StudentClient({ student }) {
         </div>
       </div>
 
+      {/* RIGHT COLUMN */}
       <div className="w-full xl:w-1/3 flex flex-col gap-6">
-        <Shortcuts studentId={student._id} />
+        
+        {/* QUICK ACTIONS CONTAINER WITH RESULT MODAL TRIGGER */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4">
+          <h1 className="text-lg font-semibold text-slate-800">
+            Quick Actions
+          </h1>
+
+          {/* Prominent Result Modal Trigger Button */}
+          {/* Prominent Result Modal Trigger Button */}
+<div className="pt-3 border-t border-slate-100">
+  <div className="flex flex-col gap-2">
+    <div className="flex items-center justify-between px-1">
+      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+        Examination
+      </span>
+      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        Published
+      </span>
+    </div>
+
+    <div className="w-full flex items-center justify-between p-3 bg-slate-900 text-white rounded-2xl shadow-md hover:bg-slate-800 transition">
+      <div className="flex items-center gap-2.5">
+        <span className="text-lg">📊</span>
+        <span className="text-sm font-medium">Student Marksheet</span>
+      </div>
+
+      <ResultModal
+        schoolId={schoolId}
+        studentId={student._id}
+        table="result"
+        type="view"
+      />
+    </div>
+  </div>
+</div>
+         
+          {/* Quick Navigation Links */}
+          <div className="flex flex-wrap gap-2.5 pt-1 border-t border-slate-100">
+            <Shortcut href={`/students/${student._id}/attendance`} label="Attendance History" />
+            <Shortcut href={`/students/${student._id}/fees`} label="Payment History" />
+          </div>
+        </div>
+
+        {/* PERFORMANCE CARD */}
         <div className="bg-white/70 backdrop-blur-xl border border-slate-200 rounded-3xl p-4 shadow-sm">
           <Performance />
         </div>
@@ -97,17 +140,14 @@ export default function StudentClient({ student }) {
   );
 }
 
-/* ---------- Components ---------- */
+/* ---------- Sub-Components ---------- */
 
 const Info = ({ icon, value }) => (
   <div className="flex items-start gap-2 text-slate-700 bg-white rounded-xl px-3 py-2 border border-slate-200">
     <Image src={icon} alt="" width={14} height={14} className="mt-1" />
-    <span className="break-all text-sm">
-      {value || "N/A"}
-    </span>
+    <span className="break-all text-sm">{value || "N/A"}</span>
   </div>
 );
-
 
 const StatsCard = ({ icon, title, value, status }) => {
   const statusColor =
@@ -136,24 +176,10 @@ const StatsCard = ({ icon, title, value, status }) => {
   );
 };
 
-const Shortcuts = ({ studentId }) => (
-  <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm">
-    <h1 className="text-lg font-semibold text-slate-800 mb-4">
-      Quick Actions
-    </h1>
-
-    <div className="flex flex-wrap gap-3">
-      <Shortcut href={`/students/${studentId}/attendance`} label="Attendance" />
-      <Shortcut href={`/students/${studentId}/fees`} label="Payment History" />
-      <Shortcut href={`/students/${studentId}/profile`} label="Results" />
-    </div>
-  </div>
-);
-
 const Shortcut = ({ href, label }) => (
   <Link
     href={href}
-    className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 transition text-sm font-medium"
+    className="flex-1 text-center px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 transition text-sm font-medium text-slate-700"
   >
     {label}
   </Link>

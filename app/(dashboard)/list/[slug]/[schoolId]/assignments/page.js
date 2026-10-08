@@ -3,7 +3,7 @@ import Class from "@/app/model/Class";
 import ClassListClient from "./ClassListClient";
 
 export default async function ClassListPage({ params }) {
-  const { slug, schoolId } = params;
+  const { slug, schoolId } = await params;
 
   if (!slug || !schoolId) {
     return <div className="p-6 text-red-500">School ID is required</div>;

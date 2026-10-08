@@ -15,7 +15,8 @@ export async function POST(req) {
       section,
       gender,
       guardianPhone,
-      guardianName,
+      fatherName,
+      motherName,
       tuitionFee,
       coachingFee,
       address,
@@ -36,6 +37,8 @@ export async function POST(req) {
       "coachingFee",
       "address",
       "schoolId",
+      "fatherName",
+      "motherName"
     ];
 
     // Check missing fields with numeric fields handled
@@ -85,7 +88,8 @@ export async function POST(req) {
       section: section || "",
       gender,
       guardianPhone,
-      guardianName: guardianName || "",
+      fatherName: fatherName || "",
+      motherName: motherName || "",
       tuitionFee: tuition,
       coachingFee: coaching,
       totalMonthlyFees,

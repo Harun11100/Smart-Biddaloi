@@ -1,11 +1,41 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import {
+  LogOut,
+  Bell,
+  ShieldCheck,
+  ChevronDown,
+  User,
+  Settings,
+  Sparkles,
+} from "lucide-react";
 
-const Navbar = ({ admin = "Admin User" }) => {
+const Navbar = ({
+  admin = "Admin User",
+  adminEmail = "admin@barendasobujkanon.edu.bd",
+  unreadNotificationsCount = 3,
+}) => {
   const router = useRouter();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("auth_token");
@@ -15,95 +45,180 @@ const Navbar = ({ admin = "Admin User" }) => {
   };
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-slate-200/80 bg-white/80 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/80 transition-colors">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-100 bg-white shadow-xs">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-6 lg:px-8">
-        
         {/* Brand / Logo */}
         <Link
           href="/"
-          className="group flex items-center gap-3 rounded-xl p-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+          className="group flex items-center gap-3.5 rounded-2xl p-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
         >
-          <div className="relative flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-slate-100 p-1.5 shadow-sm ring-1 ring-slate-900/5 transition-transform duration-200 group-hover:scale-105 dark:bg-slate-800 dark:ring-white/10">
+          <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200/80 bg-slate-50 p-2 shadow-xs transition-all duration-300 group-hover:scale-105 group-hover:bg-slate-100">
             <Image
               src="/icon.png"
               alt="School Logo"
               width={40}
               height={40}
-              className="h-full w-full object-contain"
+              className="h-full w-full object-contain transition-transform duration-300 group-hover:rotate-3"
               priority
             />
           </div>
 
           <div className="flex flex-col">
-            <span className="font-bold text-slate-900 text-sm sm:text-base tracking-tight dark:text-white leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-              Barenda Sobuj Kanon
-            </span>
-            <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 hidden sm:block">
+            <div className="flex items-center gap-1.5">
+              <span className="text-base font-extrabold tracking-tight text-slate-900 transition-colors group-hover:text-indigo-600">
+                Barenda Sobuj Kanon
+              </span>
+              <span className="hidden rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold text-indigo-600 lg:inline-block">
+                PRO
+              </span>
+            </div>
+            <span className="text-xs font-medium text-slate-500">
               School &amp; College Portal
             </span>
           </div>
         </Link>
 
         {/* Right Action Controls */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          
-          {/* Logout Action Button */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Notifications Button */}
           <button
-            onClick={handleLogout}
-            title="Logout"
-            aria-label="Logout"
-            className="group relative flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-rose-500/30 active:scale-95"
+            type="button"
+            title="Notifications"
+            aria-label="View Notifications"
+            className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition-all duration-200 hover:bg-slate-200/70 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 active:scale-95"
           >
-            <svg
-              className="h-5 w-5 transition-transform duration-200 group-hover:-translate-x-0.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-              />
-            </svg>
+            <Bell size={18} />
+            {unreadNotificationsCount > 0 && (
+              <span className="absolute right-2 top-2 flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-500" />
+              </span>
+            )}
           </button>
 
-          <div className="h-6 w-[1px] bg-slate-200 dark:bg-slate-800 hidden sm:block" />
+          {/* Quick Logout Button (Desktop View) */}
+          <button
+            onClick={handleLogout}
+            title="Quick Logout"
+            aria-label="Logout"
+            className="group hidden h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition-all duration-200 hover:bg-rose-50 hover:text-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-500/30 active:scale-95 sm:flex"
+          >
+            <LogOut
+              size={18}
+              className="transition-transform duration-200 group-hover:-translate-x-0.5"
+            />
+          </button>
 
-          {/* User Profile Info */}
-          <div className="flex items-center gap-3 pl-1">
-            <div className="hidden sm:flex flex-col text-right">
-              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 leading-snug">
-                {admin}
-              </span>
-              <div className="flex items-center justify-end gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                  Administrator
-                </span>
-              </div>
-            </div>
+          <div className="mx-1 hidden h-6 w-[1px] bg-slate-200 sm:block" />
 
-            {/* Avatar */}
-            <div className="relative group cursor-pointer">
-              <div className="h-10 w-10 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shadow-sm transition-all duration-200 group-hover:ring-2 group-hover:ring-indigo-500/40 group-hover:scale-105">
+          {/* User Profile Dropdown Menu */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsDropdownOpen((prev) => !prev)}
+              aria-expanded={isDropdownOpen}
+              aria-haspopup="true"
+              className="group flex items-center gap-2.5 rounded-2xl p-1 transition-all duration-200 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+            >
+              {/* Avatar Container */}
+              <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-xs transition-all duration-200 group-hover:ring-2 group-hover:ring-indigo-500/40">
                 <Image
                   src="/avatar.png"
                   alt={admin}
                   width={40}
                   height={40}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
                 />
+                <div className="flex h-full w-full items-center justify-center text-slate-400">
+                  <User size={20} />
+                </div>
               </div>
-            </div>
+
+              {/* Text Info */}
+              <div className="hidden flex-col text-left sm:flex">
+                <span className="text-xs font-bold leading-tight text-slate-800">
+                  {admin}
+                </span>
+                <div className="mt-0.5 flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                    Administrator
+                  </span>
+                </div>
+              </div>
+
+              <ChevronDown
+                size={14}
+                className={`hidden text-slate-400 transition-transform duration-200 sm:block ${
+                  isDropdownOpen ? "rotate-180 text-indigo-600" : ""
+                }`}
+              />
+            </button>
+
+            {/* Popover Dropdown Menu */}
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-64 origin-top-right rounded-2xl border border-slate-100 bg-white p-1.5 shadow-xl ring-1 ring-slate-900/5 transition-all">
+                {/* Header Section */}
+                <div className="border-b border-slate-100 px-3 py-2.5">
+                  <p className="text-xs font-bold text-slate-900">
+                    {admin}
+                  </p>
+                  <p className="truncate text-[11px] font-medium text-slate-400">
+                    {adminEmail}
+                  </p>
+                  <div className="mt-2 flex items-center gap-1.5 rounded-lg bg-indigo-50 px-2 py-1 text-[11px] font-semibold text-indigo-700">
+                    <ShieldCheck size={14} />
+                    <span>Verified Superadmin</span>
+                  </div>
+                </div>
+
+                {/* Nav Links */}
+                <div className="py-1">
+                  <Link
+                    href="/dashboard/profile"
+                    onClick={() => setIsDropdownOpen(false)}
+                    className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100"
+                  >
+                    <User size={15} className="text-slate-400" />
+                    Account Profile
+                  </Link>
+                  <Link
+                    href="/dashboard/settings"
+                    onClick={() => setIsDropdownOpen(false)}
+                    className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100"
+                  >
+                    <Settings size={15} className="text-slate-400" />
+                    School Settings
+                  </Link>
+                  <Link
+                    href="/dashboard/updates"
+                    onClick={() => setIsDropdownOpen(false)}
+                    className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100"
+                  >
+                    <Sparkles size={15} className="text-indigo-500" />
+                    What's New
+                  </Link>
+                </div>
+
+                {/* Logout Action */}
+                <div className="border-t border-slate-100 pt-1">
+                  <button
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50"
+                  >
+                    <LogOut size={15} />
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-
         </div>
-
       </div>
     </header>
   );
 };
 
-export default Navbar;
+export default Navbar

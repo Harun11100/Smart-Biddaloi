@@ -1,5 +1,5 @@
 import React from "react";
-import { Phone, Mail, MapPin,ShieldCheck } from "lucide-react";
+import { Phone, Mail, MapPin, ShieldCheck } from "lucide-react";
 import { NAV_LINKS } from "../../data/mockData";
 
 export default function Footer() {
@@ -63,23 +63,29 @@ export default function Footer() {
 
         </div>
 
+        {/* Bottom Bar with Left-Aligned Admin Button */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
-          <p>© ২০২৬ বারেন্ডা সবুজ কানন স্কুল এন্ড কলেজ। সর্বস্বত্ব সংরক্ষিত।</p>
+          <div className="flex flex-wrap items-center gap-4">
+            {/* Admin Button on Left Bottom Corner */}
+            <a
+              href="/management"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-white hover:text-amber-300 text-xs font-semibold transition-all duration-300 active:scale-95 group"
+            >
+              <ShieldCheck size={14} className="text-amber-400 group-hover:rotate-12 transition-transform duration-300" />
+              <span className="tracking-wide">Admin Login</span>
+            </a>
+
+            <p>© ২০২৬ বারেন্ডা সবুজ কানন স্কুল এন্ড কলেজ। সর্বস্বত্ব সংরক্ষিত।</p>
+          </div>
+
           <div className="flex gap-4">
             <a href="#" className="hover:text-slate-300">গোপনীয়তা নীতি</a>
             <a href="#" className="hover:text-slate-300">ব্যবহারের শর্তাবলী</a>
           </div>
         </div>
       </div>
-      <a
-  href="/management"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white hover:text-amber-300 text-xs font-bold backdrop-blur-md shadow-sm transition-all duration-300 hover:scale-105 group"
->
-  <ShieldCheck size={14} className="text-amber-400 group-hover:rotate-12 transition-transform duration-300" />
-  <span className="tracking-wide">Admin Login</span>
-</a>
     </footer>
   );
 }
